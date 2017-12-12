@@ -1,0 +1,48 @@
+@CHARSET "UTF-8";
+div, dl, dt, dd, ul, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, input, textarea, blockquote, p,table,td,tr { padding: 0; margin: 0 }
+ul { list-style: none }
+ul li { list-style-type: none }
+html, body { padding: 0; margin: 0; font: 14px/1.5 '\5FAE\8F6F\96C5\9ED1', tahoma, sans-serif; overflow-x: hidden; overflow-y: auto; }
+select,
+button,
+input[type="button"],
+input[type="reset"],
+input[type="submit"],
+input[type="radio"],
+input[type="checkbox"] { cursor: pointer;}
+.fl { float: left; }
+.fr { float: right; }
+.none{ display:none}
+.clr { *zoom:1}
+.clr:after { display: block; overflow: hidden; clear: both; height: 0; visibility: hidden; content: "." }
+.clear { clear: both; }
+.oh { overflow: hidden; }
+a { text-decoration: none;color:#333 }
+img { border: none; }
+.fs14{font-size:14px;}
+.p10{padding:10px}
+.red{color:red}
+.formTable{border: none;width:100%;padding:15px}
+.formTable td{height: 30px;padding:2px 3px}
+.formDiv{padding:15px 20px;border: none;}
+.formDiv p{padding:5px 0px}
+.searchDiv{border-bottom:#95b8e7 solid 1px;background-color: #EFF5FF;padding:10px}
+.searchDiv label{display:inline-block;margin-right:5px;margin-left:10px;}
+a.ace_button {
+    background-color: #21b9bb;
+    border-color: #21b9bb;
+    color: #fff;
+    display: inline-block;
+    font-size: 12px;
+    padding: 3px 6px;
+    margin:auto 3px;
+}
+.tablelist thead, .tablelist tr {
+border-top: 1px solid rgb(230, 189, 189);
+}
+.tablelist td, .tablelist th {
+padding: 5px 10px;
+font-size: 12px;
+color: #B16A7C;
+}
+.tablelist tr:hover{background-color: #EFF5FF}
