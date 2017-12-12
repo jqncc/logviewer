@@ -20,9 +20,9 @@ pageContext.setAttribute("ctx", ctx);
 <script type="text/javascript">var contextPath="${ctx}";</script>
 <style type="text/css">
 #leftPanel{width:180px}
-.nav{padding:15px 10px;}
+.nav{padding:15px 0px;}
 .nav li{list-style-type: none}
-.nav li a{text-decoration: none;font-size:14px;color:#333}
+.nav li a{text-decoration: none;font-size:12px;color:#333}
 #headPanel {color:#fff;font-size:20px;padding-left:20px}
 </style>
 </head>
@@ -41,14 +41,14 @@ pageContext.setAttribute("ctx", ctx);
 	            request.setAttribute("servers", Config.SERVER_INFOS);
 	            %>
 	            <c:forEach items="${projs}" var="item">
-	            <li><a href="javascript:void(0)" data-link="${ctx}/logFileView?projId=${item.projId}">${item.projName}</a></li>
+	            <li><a href="javascript:void(0)" data-title="${item.projName}日志文件" data-link="${ctx}/logFileView?projId=${item.projId}">${item.projName}</a></li>
 	            </c:forEach>
 	            </ul>
             </div>
             <div title="服务器实时日志">
-                <ul class="nav">
+                <ul class="nav easyui-tree">
                  <c:forEach items="${servers}" var="item">
-                <li><a href="javascript:void(0)" data-title="${item.ip}实时日志" title="${item.desc}" data-link="realTimeLogViewer.jsp?ip=${item.ip}">${item.ip}</a></li>
+                <li iconCls="icon-layout"><a href="javascript:void(0)" data-title="${item.ip}实时日志" title="${item.desc}" data-link="realTimeLogViewer.jsp?ip=${item.ip}">${item.ip}</a></li>
                 </c:forEach>
                 </ul>
             </div>
@@ -72,7 +72,7 @@ pageContext.setAttribute("ctx", ctx);
 	         var clickLink=$(this);
 	         var title;
 	         if(clickLink.attr('data-title')!=''){
-	        	 title=clickLink.attr('data-title  ');
+	        	 title=clickLink.attr('data-title');
 	         }else{
 	        	 title = clickLink.text();
 	         }
