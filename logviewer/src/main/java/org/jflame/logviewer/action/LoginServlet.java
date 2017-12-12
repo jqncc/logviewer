@@ -13,6 +13,8 @@ import javax.servlet.http.HttpSession;
 
 import org.jflame.logviewer.util.Config;
 import org.jflame.toolkit.crypto.DigestHelper;
+import org.jflame.toolkit.crypto.SymmetricEncryptor;
+import org.jflame.toolkit.crypto.BaseEncryptor.Algorithm;
 import org.jflame.toolkit.util.StringHelper;
 
 /**
@@ -56,5 +58,9 @@ public class LoginServlet extends HttpServlet {
 
     public static void main(String[] args) {
         System.out.println(DigestHelper.shaHex("viewer17"));
+        SymmetricEncryptor encryptor = new SymmetricEncryptor(Algorithm.AES);
+        byte[] passwd = "1234560123456780".getBytes();
+        byte[] iv = new byte[16];
+        encryptor.dencryptHex(null, null, null)
     }
 }
