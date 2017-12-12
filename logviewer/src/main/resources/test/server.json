@@ -1,0 +1,17 @@
+[
+    {
+        "desc": "tomcat",
+        "ip": "10.18.200.95",
+        "name": "测试95",
+        "user": "oper",
+        "pwd": "oJRCyP5LkbWxttinzN_tmQ",
+        "tomcats": [
+            {
+                "dir": "/usr/local/tomcat-7",
+                "name": "tomcat",
+                "port": 8080,
+                "desc": "部署项目:"
+            }
+        ]
+    }
+]

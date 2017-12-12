@@ -6,7 +6,9 @@ import java.util.List;
 
 import org.jflame.logviewer.model.ProjLogInfo;
 import org.jflame.logviewer.model.Server;
+import org.jflame.toolkit.crypto.SymmetricEncryptor;
 import org.jflame.toolkit.file.FileHelper;
+import org.jflame.toolkit.util.CollectionHelper;
 import org.jflame.toolkit.util.JsonHelper;
 
 import com.alibaba.fastjson.JSON;
@@ -38,6 +40,11 @@ public final class Config {
         try (InputStream jsonStream = FileHelper.readFileFromClassPath(SERVER_CONFIG_FILE)) {
             SERVER_INFOS = (List<Server>) JSON.parseObject(jsonStream,
                     JsonHelper.buildListType(Server.class).getType());
+            if (CollectionHelper.isNotEmpty(SERVER_INFOS)) {
+                for (Server server : SERVER_INFOS) {
+                    server.setPwd(dencrypt(server.getPwd()));
+                }
+            }
         } catch (IOException e) {
             throw new RuntimeException("读取配置文件失败:" + SERVER_CONFIG_FILE);
         }
@@ -61,23 +68,18 @@ public final class Config {
         return null;
     }
 
-    /*    public static void main(String[] args) throws IOException {
-        List<Server> lst = new ArrayList<>();
-        Server s1 = new Server();
-        s1.setIp("10.26.126.119");
-        s1.setName("xx");
-        s1.setDesc("ssss");
-        s1.setName("user");
-        s1.setPwd("passwd");
-        Set<TomcatInfo> ts = new HashSet<>();
-        TomcatInfo ti = new TomcatInfo();
-        ti.setName("tomcat1");
-        ti.setPort(8080);
-        ti.setDir("/usr/local/tomcat");
-        ti.setDir("程序");
-        ts.add(ti);
-        s1.setTomcats(ts);
-        lst.add(s1);
-        JSON.writeJSONString(Files.newOutputStream(Paths.get("d:\\server.json")), lst);
+    private static byte[] passwd = "1234560123456789".getBytes();
+
+    public static String encrypt(String text) {
+        return SymmetricEncryptor.aesEncrypt(text, passwd);
+    }
+
+    public static String dencrypt(String text) {
+        return SymmetricEncryptor.aesDencrypt(text, passwd);
+    }
+
+    /*   public static void main(String[] args) {
+        System.out.println(encrypt("ghg889900"));
     }*/
+
 }

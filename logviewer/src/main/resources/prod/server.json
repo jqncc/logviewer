@@ -1,10 +1,10 @@
 [
     {
         "desc": "tomcat",
-        "ip": "10.18.200.95",
+        "ip": "10.18.200.85",
         "name": "测试95",
         "user": "oper",
-        "pwd": "ghg8899",
+        "pwd": "oJRCyP5LkbWxttinzN_tmQ",
         "tomcats": [
             {
                 "dir": "/usr/local/tomcat-7",

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="${log.scan}" scanPeriod="60 seconds">
-	<contextName>zp_admin</contextName>
-	<property name="logDir" value="${log.basedir}" />
+<configuration scan="true" scanPeriod="60 seconds">
+	<contextName>logviewer</contextName>
+	<property name="logDir" value="/webserver/logs/logviewer" />
 	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<pattern>%date{HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
@@ -21,16 +21,7 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.springframework" level="warn" />
-	<logger name="org.springframework.web" level="warn" />
-	<logger name="org.apache.http" level="warn" />
-	<logger name="org.apache.ibatis" level="${log.level}" />
-	<logger name="org.mybatis.spring" level="warn" />
-    <logger name="com.baomidou.mybatisplus" level="${log.level}" />
-	<logger name="com.alibaba.dubbo" level="info" />
-	<logger name="org.apache.zookeeper" level="info" />
-
-	<root level="${log.level}">
+	<root level="info">
 		<appender-ref ref="console" />
 		<appender-ref ref="rollingFile" />
 	</root>
