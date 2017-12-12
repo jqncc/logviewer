@@ -10,6 +10,7 @@ import org.jflame.toolkit.crypto.SymmetricEncryptor;
 import org.jflame.toolkit.file.FileHelper;
 import org.jflame.toolkit.util.CollectionHelper;
 import org.jflame.toolkit.util.JsonHelper;
+import org.jflame.toolkit.util.StringHelper;
 
 import com.alibaba.fastjson.JSON;
 
@@ -29,6 +30,7 @@ public final class Config {
     public static String SESSION_CURRENT_USER = "current_user_key";
     public static String user = "loger";
     public static String pwd = "c60c2f6cd30e85f6a1333271eb257313f4f5143a";// viewer17
+    private static byte[] passwd = "1234560123456789".getBytes();
 
     static {
         try (InputStream jsonStream = FileHelper.readFileFromClassPath(PROJ_CONFIG_FILE)) {
@@ -42,7 +44,14 @@ public final class Config {
                     JsonHelper.buildListType(Server.class).getType());
             if (CollectionHelper.isNotEmpty(SERVER_INFOS)) {
                 for (Server server : SERVER_INFOS) {
-                    server.setPwd(dencrypt(server.getPwd()));
+                    try {
+                        if (StringHelper.isNotEmpty(server.getPwd())) {
+                            System.out.println(server.getPwd());
+                            server.setPwd(Config.dencrypt(server.getPwd()));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } catch (IOException e) {
@@ -68,8 +77,6 @@ public final class Config {
         return null;
     }
 
-    private static byte[] passwd = "1234560123456789".getBytes();
-
     public static String encrypt(String text) {
         return SymmetricEncryptor.aesEncrypt(text, passwd);
     }
@@ -78,8 +85,8 @@ public final class Config {
         return SymmetricEncryptor.aesDencrypt(text, passwd);
     }
 
-    /*   public static void main(String[] args) {
-        System.out.println(encrypt("ghg889900"));
-    }*/
+    public static void main(String[] args) {
+        System.out.println(dencrypt("prAp6m70BCX3RChjCPUDXA"));
+    }
 
 }

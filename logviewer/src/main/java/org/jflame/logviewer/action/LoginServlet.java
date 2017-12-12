@@ -55,7 +55,7 @@ public class LoginServlet extends HttpServlet {
     }
 
     public static void main(String[] args) {
-        System.out.println(DigestHelper.shaHex("viewer17"));
-        System.out.println(Config.encrypt("ghg889900"));
+        // System.out.println(DigestHelper.shaHex("viewer17"));
+        System.out.println(Config.encrypt("ghg@201717"));
     }
 }

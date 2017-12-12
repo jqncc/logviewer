@@ -30,6 +30,7 @@ pageContext.setAttribute("ctx", ctx);
     <div id="headPanel" data-options="region:'north',border:false,split:true" 
     style="overflow:hidden;height:40px;background-color:#27598A;">
         日志查看系统
+        <a href="${ctx}/logout" style="display: inline-block;color:#fff;float: right;font-size:16px;padding-right:20px">退出</a>
     </div>
  <!-- begin of sidebar -->
     <div id="leftPanel" data-options="region:'west',split:true,border:true,title:'导航'"> 

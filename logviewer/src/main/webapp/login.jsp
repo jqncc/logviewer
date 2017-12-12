@@ -40,7 +40,7 @@ function submitForm(){
 <div style="width:400px;padding:10px;margin: 200px auto">
 <div id="login" class="easyui-panel" title="实时日志查看系统-登录"
     data-options="iconCls:'icon-save',closable:false" style="width:100%;height:250px;background-color: #EFF5FF">
-    <form id="frm" method="post" action="${ctx}/login" style="padding:30px 50px">
+    <form id="frm" method="post" action="${ctx}/login" style="padding:25px 50px">
         <p style="color:red;padding:5px">${errmsg}</p>
 	    <p><input class="easyui-textbox" name="uname" value="${uname}" label="用户名:" labelWidth="60" style="width:250px;height:30px" data-options="required:true" iconCls="icon-man" ></p>
 	    <p><input class="easyui-passwordbox" name="upwd" value="${upwd}" label="密 码:" labelWidth="60" style="width:250px;height:30px" data-options="required:true" iconCls="icon-lock"></p>

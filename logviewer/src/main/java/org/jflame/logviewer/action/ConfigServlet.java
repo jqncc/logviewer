@@ -12,9 +12,6 @@ import org.jflame.logviewer.util.Config;
 import org.jflame.toolkit.util.JsonHelper;
 import org.jflame.web.util.WebUtils;
 
-/**
- * Servlet implementation class ConfigServlet
- */
 @WebServlet("/config")
 public class ConfigServlet extends HttpServlet {
 

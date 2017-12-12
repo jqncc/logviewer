@@ -16,7 +16,7 @@ public class Server implements Serializable {
     private String desc;
     private String user;
     private String pwd;
-    private Set<TomcatInfo> tomcats;
+    private Set<Container> tomcats;
 
     public String getName() {
         return name;
@@ -42,11 +42,11 @@ public class Server implements Serializable {
         this.desc = desc;
     }
 
-    public Set<TomcatInfo> getTomcats() {
+    public Set<Container> getTomcats() {
         return tomcats;
     }
 
-    public void setTomcats(Set<TomcatInfo> tomcats) {
+    public void setTomcats(Set<Container> tomcats) {
         this.tomcats = tomcats;
     }
 
@@ -68,7 +68,7 @@ public class Server implements Serializable {
 
     @Override
     public String toString() {
-        return "Server [name=" + name + ", ip=" + ip + ", user=" + user + "]";
+        return "Server [name=" + name + ", ip=" + ip + ", desc=" + desc + ", user=" + user + "]";
     }
 
 }

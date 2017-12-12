@@ -2,13 +2,14 @@ package org.jflame.logviewer.model;
 
 import java.io.Serializable;
 
-public class TomcatInfo implements Serializable {
+public class Container implements Serializable {
 
     private static final long serialVersionUID = 4855339718323131069L;
-    private String dir;// tomcat根目录
+    private String dir;// 根目录
     private String name;// 名称
-    private int port;// 端口
     private String desc;// 描述
+    private String console;
+    private int port;// 端口
 
     public String getDir() {
         return dir;
@@ -42,9 +43,18 @@ public class TomcatInfo implements Serializable {
         this.desc = desc;
     }
 
+    public String getConsole() {
+        return console;
+    }
+
+    public void setConsole(String console) {
+        this.console = console;
+    }
+
     @Override
     public String toString() {
-        return "TomcatInfo [dir=" + dir + ", name=" + name + ", port=" + port + "]";
+        return "Container [dir=" + dir + ", name=" + name + ", desc=" + desc + ", console=" + console + ", port=" + port
+                + "]";
     }
 
 }

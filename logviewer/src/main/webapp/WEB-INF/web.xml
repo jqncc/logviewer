@@ -8,7 +8,7 @@
       <param-name>forceEncoding</param-name>
       <param-value>true</param-value>
     </init-param>
-  </filter>
+  </filter><!-- /webserver/logs/synclog -->
   <filter-mapping>
     <filter-name>CharacterEncoding</filter-name>
     <url-pattern>/*</url-pattern>
@@ -18,7 +18,7 @@
     <servlet-class>org.jflame.logviewer.action.ShowLogFileServlet</servlet-class>
     <init-param>
       <param-name>logPath</param-name>
-      <param-value>D:\\datacenter\\logs</param-value>
+      <param-value>D:/datacenter/logs</param-value>
     </init-param>
   </servlet>
   <servlet-mapping>

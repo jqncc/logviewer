@@ -1,7 +1,6 @@
 package org.jflame.logviewer.action;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -14,8 +13,8 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+import org.jflame.logviewer.model.Container;
 import org.jflame.logviewer.model.Server;
-import org.jflame.logviewer.model.TomcatInfo;
 import org.jflame.logviewer.util.CmdClient;
 import org.jflame.logviewer.util.Config;
 import org.jflame.logviewer.util.LocalClient;
@@ -34,7 +33,7 @@ public class RealTimeLogEndpoint {
     private Session curSession;// endpoint为多实例,所以不会有多线程安全问题
     private CmdClient cmd;
     private Server server = null;
-    private TomcatInfo tomcat = null;
+    private Container appContainer = null;
     private String catalinaLogPath;
 
     @OnOpen
@@ -52,24 +51,28 @@ public class RealTimeLogEndpoint {
             return;
         }
         int port = Integer.parseInt(portStr);
-        tomcat = null;
-        for (TomcatInfo ti : server.getTomcats()) {
+        appContainer = null;
+        for (Container ti : server.getTomcats()) {
             if (ti.getPort() == port) {
-                tomcat = ti;
+                appContainer = ti;
             }
         }
-        if (tomcat == null) {
-            sendMessage(String.format("服务器%s中端口为%s的tomcat不存在", ip, portStr));
-            closeSession(session, CloseCodes.CANNOT_ACCEPT, "tomcat不存在");
+        if (appContainer == null) {
+            sendMessage(String.format("服务器%s中端口为%s的应用不存在", ip, portStr));
+            closeSession(session, CloseCodes.CANNOT_ACCEPT, "应用不存在");
             return;
         }
-        catalinaLogPath = Paths.get(tomcat.getDir(), "logs/catalina.out").toString().replace('\\', '/');// windows平台运行路径为\所以替换
+        if (StringHelper.isEmpty(appContainer.getConsole())) {
+            catalinaLogPath = Paths.get(appContainer.getDir(), "logs/catalina.out").toString().replace('\\', '/');// windows平台运行路径为\所以替换
+        } else {
+            catalinaLogPath = appContainer.getConsole();
+        }
         try {
             if (IPAddressHelper.getLocalIP().equals(server.getIp())) {
-                logger.debug("open websocket local client,server:{},tomcat:", server, tomcat);
+                logger.debug("open websocket local client,server:{},container:", server, appContainer);
                 cmd = new LocalClient();
             } else {
-                logger.debug("open websocket ssh client,server:{},tomcat:", server, tomcat);
+                logger.debug("open websocket ssh client,server:{},container:", server, appContainer);
                 cmd = new SSHClient(server);
             }
         } catch (Exception e) {
@@ -79,10 +82,10 @@ public class RealTimeLogEndpoint {
         curSession = session;
     }
 
-    public static void main(String[] args) {
+    /* public static void main(String[] args) {
         Path p = Paths.get("/usr/local/tomcat-7", "logs/catalina.out");
         System.out.println(p.toString());
-    }
+    }*/
 
     @OnMessage
     public void onMessage(String message, Session session) throws IOException, InterruptedException {
