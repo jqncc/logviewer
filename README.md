@@ -1,6 +1,8 @@
 # logviewer
+
 一个简单的服务器日志可看系统,实现日志文件的在线浏览和下载,应用实时日志在线查看
-1.通过rsync+sersync将各服务器日志文件同步集中到一台服务器,按ip划分文件夹
-2.通过websocket+SSH tail命令,在浏览器实时查看多台服务器(tomcat或其他可通过tail查看)日志
+
+* 通过rsync+sersync将各服务器日志文件同步集中到一台服务器,按ip划分文件夹
+* 通过websocket+SSH tail命令,在浏览器实时查看多台服务器(tomcat或其他可通过tail查看)日志
 
 适用小型公司有多台服务器,日志量不多的情况
