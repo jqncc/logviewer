@@ -66,7 +66,10 @@ public class ShowLogFileServlet extends HttpServlet {
             // 按路径,提取日志文件
             for (String projPath : projLogInfo.getLogPaths()) {
                 List<FileAttri> attris = new ArrayList<>();
-                Path targetPath = Paths.get(Config.LOG_BASE_FOLDER, projPath);
+                Path targetPath = Paths.get(projPath);
+                if (!targetPath.isAbsolute()) {
+                    targetPath = Paths.get(Config.LOG_BASE_FOLDER, projPath);
+                }
                 File logDir = targetPath.toFile();
                 if (logDir.exists()) {
                     File[] targetFiles;

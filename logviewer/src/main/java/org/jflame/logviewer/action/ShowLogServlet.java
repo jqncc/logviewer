@@ -2,6 +2,7 @@ package org.jflame.logviewer.action;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -24,8 +25,16 @@ public class ShowLogServlet extends HttpServlet {
             throws ServletException, IOException {
         String cmd = request.getParameter("cmd");
         String logPath = request.getParameter("f");
-        Path targetPath = Paths.get(Config.LOG_BASE_FOLDER, TranscodeHelper.urldecode(logPath));
-
+        // Path targetPath = Paths.get(Config.LOG_BASE_FOLDER, TranscodeHelper.urldecode(logPath));
+        logPath = TranscodeHelper.urldecode(logPath);
+        Path targetPath = Paths.get(logPath);
+        if (!targetPath.isAbsolute()) {
+            targetPath = Paths.get(Config.LOG_BASE_FOLDER, logPath);
+        }
+        if (!Files.exists(targetPath)) {
+            response.getWriter().println("文件不存在" + targetPath.toString());
+            response.getWriter().close();
+        }
         if ("down".equals(cmd)) {
             DownloadUtils.download(response, targetPath.toString());
         } else if ("view".equals(cmd)) {
