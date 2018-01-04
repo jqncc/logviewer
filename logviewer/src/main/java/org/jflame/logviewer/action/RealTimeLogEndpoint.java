@@ -48,6 +48,7 @@ public class RealTimeLogEndpoint {
         if (server == null) {
             sendMessage(String.format("服务器%s不存在", ip));
             closeSession(session, CloseCodes.CANNOT_ACCEPT, "服务器不存在");
+            logger.error("websocket error,server not found {}", ip);
             return;
         }
         int port = Integer.parseInt(portStr);
@@ -60,6 +61,7 @@ public class RealTimeLogEndpoint {
         if (appContainer == null) {
             sendMessage(String.format("服务器%s中端口为%s的应用不存在", ip, portStr));
             closeSession(session, CloseCodes.CANNOT_ACCEPT, "应用不存在");
+            logger.error("websocket error,container not found {}:{}", ip, portStr);
             return;
         }
         if (StringHelper.isEmpty(appContainer.getConsole())) {
@@ -69,10 +71,10 @@ public class RealTimeLogEndpoint {
         }
         try {
             if (IPAddressHelper.getLocalIP().equals(server.getIp())) {
-                logger.debug("open websocket local client,server:{},container:", server, appContainer);
+                logger.info("open websocket local client,server:{},container:", server, appContainer);
                 cmd = new LocalClient();
             } else {
-                logger.debug("open websocket ssh client,server:{},container:", server, appContainer);
+                logger.info("open websocket ssh client,server:{},container:", server, appContainer);
                 cmd = new SSHClient(server);
             }
         } catch (Exception e) {
@@ -89,7 +91,7 @@ public class RealTimeLogEndpoint {
 
     @OnMessage
     public void onMessage(String message, Session session) throws IOException, InterruptedException {
-        // System.out.println(message);
+        System.out.println(message);
         if (StringHelper.isNotEmpty(message)) {
             Map<String,String> params = StringHelper.buildMapFromUrlParam(message);
             final String cmdParam = params.get("cmd");
@@ -99,11 +101,11 @@ public class RealTimeLogEndpoint {
                     if (params.containsKey("line")) {
                         cmdText = "tail -n " + params.get("line") + " " + catalinaLogPath;
                         // System.out.println(cmdText);
-                        logger.debug(cmdText);
+                        logger.info(cmdText);
                         cmd.exec(cmdText, curSession);
                     } else {
                         cmdText = "tail -f " + catalinaLogPath;
-                        logger.debug(cmdText);
+                        logger.info(cmdText);
                         cmd.execAsync(cmdText, curSession);
                     }
                 } catch (Exception e) {

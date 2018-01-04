@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import org.jflame.logviewer.action.RealTimeLogEndpoint;
 import org.jflame.logviewer.model.ProjLogInfo;
 import org.jflame.logviewer.model.Server;
 import org.jflame.toolkit.crypto.SymmetricEncryptor;
@@ -11,12 +12,15 @@ import org.jflame.toolkit.file.FileHelper;
 import org.jflame.toolkit.util.CollectionHelper;
 import org.jflame.toolkit.util.JsonHelper;
 import org.jflame.toolkit.util.StringHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 
 @SuppressWarnings("unchecked")
 public final class Config {
 
+    private static final Logger logger = LoggerFactory.getLogger(RealTimeLogEndpoint.class);
     public static List<Server> activeWebServers;
 
     public static String LOG_BASE_FOLDER;
@@ -37,6 +41,7 @@ public final class Config {
             PROJ_INFOS = (List<ProjLogInfo>) JSON.parseObject(jsonStream,
                     JsonHelper.buildListType(ProjLogInfo.class).getType());
         } catch (IOException e) {
+            logger.error("load PROJ_INFOS error", e);
             throw new RuntimeException("读取配置文件失败:" + PROJ_CONFIG_FILE);
         }
         try (InputStream jsonStream = FileHelper.readFileFromClassPath(SERVER_CONFIG_FILE)) {
@@ -44,17 +49,14 @@ public final class Config {
                     JsonHelper.buildListType(Server.class).getType());
             if (CollectionHelper.isNotEmpty(SERVER_INFOS)) {
                 for (Server server : SERVER_INFOS) {
-                    try {
-                        if (StringHelper.isNotEmpty(server.getPwd())) {
-                            System.out.println(server.getPwd());
-                            server.setPwd(Config.dencrypt(server.getPwd()));
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if (StringHelper.isNotEmpty(server.getPwd())) {
+                        // System.out.println(server.getPwd());
+                        server.setPwd(Config.dencrypt(server.getPwd()));
                     }
                 }
             }
         } catch (IOException e) {
+            logger.error("load SERVER_INFOS error", e);
             throw new RuntimeException("读取配置文件失败:" + SERVER_CONFIG_FILE);
         }
     }
@@ -85,8 +87,8 @@ public final class Config {
         return SymmetricEncryptor.aesDencrypt(text, passwd);
     }
 
-    public static void main(String[] args) {
+    /* public static void main(String[] args) {
         System.out.println(dencrypt("prAp6m70BCX3RChjCPUDXA"));
-    }
+    }*/
 
 }

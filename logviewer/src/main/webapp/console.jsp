@@ -46,7 +46,7 @@ basePath= basePath + request.getContextPath();
 </div>
 <script type="text/javascript">
    var ws;
-   $(function(){
+   function openConn(){
         ws = new WebSocket('ws://<%=basePath%>/realTimeLogViewer?serverId=${param.ip}&port=${param.port}');
         ws.onopen = function()
         {
@@ -66,13 +66,16 @@ basePath= basePath + request.getContextPath();
         ws.onerror = function(evt) { 
         	modstatus(evt.data);
         }; 
-    });
+    }
  
   function modstatus(text){
     $('#statusbar').html(text);
   }
   
   function tail(line){
+	  if(!ws){
+		  openConn();
+	  }
 	  var cmd="cmd=tail";
 	  if(line==1){
 		  var n=$('#line').val();

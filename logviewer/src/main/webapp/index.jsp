@@ -21,7 +21,7 @@ pageContext.setAttribute("ctx", ctx);
 <style type="text/css">
 #leftPanel{width:180px}
 .nav{padding:15px 0px;}
-.nav li{list-style-type: none}
+.nav li{list-style-type: none;line-height:24px;}
 .nav li a{text-decoration: none;font-size:12px;color:#333}
 #headPanel {color:#fff;font-size:20px;padding-left:20px}
 </style>
@@ -36,20 +36,24 @@ pageContext.setAttribute("ctx", ctx);
     <div id="leftPanel" data-options="region:'west',split:true,border:true,title:'导航'"> 
         <div class="easyui-accordion" data-options="border:false,fit:true"> 
             <div title="项目日志">
-	            <ul class="nav">
+	            <ul class="nav easyui-tree">
 	            <%request.setAttribute("projs", Config.PROJ_INFOS); 
 	            request.setAttribute("servers", Config.SERVER_INFOS);
 	            %>
+	            <c:if test="${not empty projs}">
 	            <c:forEach items="${projs}" var="item">
-	            <li><a href="javascript:void(0)" data-title="${item.projName}日志文件" data-link="${ctx}/logFileView?projId=${item.projId}">${item.projName}</a></li>
+	            <li iconCls="icon-detail"><a href="javascript:void(0)" data-title="${item.projName}日志文件" data-link="${ctx}/logFileView?projId=${item.projId}">${item.projName}</a></li>
 	            </c:forEach>
+	            </c:if>
 	            </ul>
             </div>
             <div title="服务器实时日志">
                 <ul class="nav easyui-tree">
+                <c:if test="${not empty servers}">
                  <c:forEach items="${servers}" var="item">
                 <li iconCls="icon-layout"><a href="javascript:void(0)" data-title="${item.ip}实时日志" title="${item.desc}" data-link="realTimeLogViewer.jsp?ip=${item.ip}">${item.ip}</a></li>
                 </c:forEach>
+                </c:if>
                 </ul>
             </div>
         </div>

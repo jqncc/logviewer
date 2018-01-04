@@ -36,10 +36,7 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         String uname = request.getParameter("uname");
         String upwd = request.getParameter("upwd");
-        if (StringHelper.isEmpty(uname) || StringHelper.isEmpty(upwd)) {
-            request.setAttribute("errmsg", "用户名和密码不能为空");
-            request.getRequestDispatcher("/login.jsp").forward(request, response);
-        } else {
+        if (StringHelper.isNotEmpty(uname) && StringHelper.isNotEmpty(upwd)) {
             String pwdCrypt = DigestHelper.shaHex(upwd.trim());
             if (Config.user.equals(uname.trim()) && Config.pwd.equals(pwdCrypt)) {
                 HttpSession session = request.getSession();
@@ -49,13 +46,17 @@ public class LoginServlet extends HttpServlet {
                 user.put("name", uname);
                 session.setAttribute(Config.SESSION_CURRENT_USER, user);
                 response.sendRedirect(request.getContextPath() + "/index.jsp");
+                return;
             }
         }
+        request.setAttribute("errmsg", "用户名或密码不正确");
+        request.getRequestDispatcher("/login.jsp").forward(request, response);
 
     }
 
     public static void main(String[] args) {
         // System.out.println(DigestHelper.shaHex("viewer17"));
-        System.out.println(Config.encrypt("ghg@201717"));
+        System.out.println(Config.encrypt("Ghg@2017"));
+        System.out.println(Config.encrypt("ghg008899"));
     }
 }

@@ -11,6 +11,11 @@ if (request.getServerPort() != 80 && !(request.getServerPort() == 443 && "https"
 }
 basePath= basePath + request.getContextPath();
 %>
+<script type="text/javascript">
+  if(window.top!=window.self) {
+    window.top.location.href=location.href;    
+  }
+</script>
 <!DOCTYPE html>
 <html>
 <head>

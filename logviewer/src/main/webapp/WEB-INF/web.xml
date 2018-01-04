@@ -8,7 +8,7 @@
       <param-name>forceEncoding</param-name>
       <param-value>true</param-value>
     </init-param>
-  </filter><!-- /webserver/logs/synclog -->
+  </filter><!--  -->
   <filter-mapping>
     <filter-name>CharacterEncoding</filter-name>
     <url-pattern>/*</url-pattern>
@@ -18,7 +18,7 @@
     <servlet-class>org.jflame.logviewer.action.ShowLogFileServlet</servlet-class>
     <init-param>
       <param-name>logPath</param-name>
-      <param-value>D:/datacenter/logs</param-value>
+      <param-value>/webserver/logs/synclog</param-value>
     </init-param>
   </servlet>
   <servlet-mapping>
@@ -37,4 +37,8 @@
     <servlet-name>logoutServlet</servlet-name>
     <url-pattern>/logout</url-pattern>
   </servlet-mapping>
+  <error-page>
+    <error-code>500</error-code>
+    <location>/error.jsp</location>
+  </error-page>
 </web-app>
