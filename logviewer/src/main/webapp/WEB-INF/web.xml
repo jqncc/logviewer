@@ -1,44 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
-  <display-name>log viewer</display-name>
-  <filter>
-    <filter-name>CharacterEncoding</filter-name>
-    <filter-class>org.jflame.web.filter.CharacterEncodingFilter</filter-class>
-    <init-param>
-      <param-name>forceEncoding</param-name>
-      <param-value>true</param-value>
-    </init-param>
-  </filter><!--  -->
-  <filter-mapping>
-    <filter-name>CharacterEncoding</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
-  <servlet>
-    <servlet-name>logFileView</servlet-name>
-    <servlet-class>org.jflame.logviewer.action.ShowLogFileServlet</servlet-class>
-    <init-param>
-      <param-name>logPath</param-name>
-      <param-value>/webserver/logs/synclog</param-value>
-    </init-param>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>logFileView</servlet-name>
-    <url-pattern>/logFileView</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <servlet-name>logoutServlet</servlet-name>
-    <servlet-class>org.jflame.web.servlet.LogoutServlet</servlet-class>
-    <init-param>
-      <param-name>logoutPage</param-name>
-      <param-value>/login.jsp</param-value>
-    </init-param>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>logoutServlet</servlet-name>
-    <url-pattern>/logout</url-pattern>
-  </servlet-mapping>
-  <error-page>
-    <error-code>500</error-code>
-    <location>/error.jsp</location>
-  </error-page>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	id="WebApp_ID" version="3.0">
+	<display-name>logviewer</display-name>
+	<context-param>
+		<param-name>webAppRootKey</param-name>
+		<param-value>logviewer</param-value>
+	</context-param>
+
+	<listener>
+		<listener-class>org.jflame.logviewer.MySessionListener</listener-class>
+	</listener>
+
+	<filter>
+		<filter-name>loginFilter</filter-name>
+		<filter-class>org.jflame.logviewer.filter.LoginFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>loginFilter</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping>
+
+
+	<servlet-mapping>
+		<servlet-name>default</servlet-name>
+		<url-pattern>*.js</url-pattern>
+		<url-pattern>*.css</url-pattern>
+		<url-pattern>*.html</url-pattern>
+		<url-pattern>*.htm</url-pattern>
+		<url-pattern>*.png</url-pattern>
+		<url-pattern>*.jpg</url-pattern>
+		<url-pattern>*.gif</url-pattern>
+		<url-pattern>*.ico</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>loginServlet</servlet-name>
+		<servlet-class>org.jflame.logviewer.action.LoginServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>loginServlet</servlet-name>
+		<url-pattern>/login</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>showServlet</servlet-name>
+		<servlet-class>org.jflame.logviewer.action.ShowServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>showServlet</servlet-name>
+		<url-pattern>/show.do</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>logoutServlet</servlet-name>
+		<servlet-class>org.jflame.web.servlet.LogoutServlet</servlet-class>
+		<init-param>
+			<param-name>logoutPage</param-name>
+			<param-value>index.html</param-value>
+		</init-param>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>logoutServlet</servlet-name>
+		<url-pattern>/logout</url-pattern>
+	</servlet-mapping>
+
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+	<session-config>
+		<session-timeout>15</session-timeout>
+	</session-config>
 </web-app>

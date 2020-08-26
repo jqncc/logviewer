@@ -2,42 +2,20 @@ package org.jflame.logviewer.model;
 
 import java.io.Serializable;
 
-import org.jflame.toolkit.util.DateHelper;
+import org.jflame.commons.model.TreeNode;
+import org.jflame.commons.util.DateHelper;
 
-public class FileAttri implements Comparable<FileAttri>, Serializable {
+public class FileAttri extends TreeNode implements Serializable {
 
     private static final long serialVersionUID = 3862330131151025200L;
-    private String name;
-    private String size;
-    private long lastUpdateDate;
-    private String path;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSize() {
-        return size;
-    }
+    private String path;// Comparable<FileAttri>,
 
     public void setSize(String size) {
-        this.size = size;
-    }
-
-    public String getLastUpdateDateText() {
-        return DateHelper.formatLong(new java.util.Date(lastUpdateDate));
-    }
-
-    public long getLastUpdateDate() {
-        return lastUpdateDate;
+        addAttribute("size", size);
     }
 
     public void setLastUpdateDate(long lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
+        addAttribute("lastUpdateDate", DateHelper.formatLong(new java.util.Date(lastUpdateDate * 1000)));
     }
 
     public String getPath() {
@@ -48,15 +26,15 @@ public class FileAttri implements Comparable<FileAttri>, Serializable {
         this.path = path;
     }
 
-    @Override
+    /*  @Override
     public int compareTo(FileAttri o) {
-        if (this.lastUpdateDate > o.lastUpdateDate)
+        if (this.getLastUpdateDate() > o.getLastUpdateDate())
             return -1;
-        else if (this.lastUpdateDate < o.lastUpdateDate)
+        else if (this.getLastUpdateDate() < o.getLastUpdateDate())
             return 1;
         else {
             return 0;
         }
-    }
+    }*/
 
 }

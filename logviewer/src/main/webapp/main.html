@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>日志查看</title>
+<link rel="stylesheet" type="text/css" href="js/plugins/easyui/themes/material/easyui.css">
+<link rel="stylesheet" type="text/css" href="js/plugins/easyui/themes/icon.css">
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plugins/easyui/jquery.easyui.min.js"></script>
+<style type="text/css">
+.slink{text-decoration: underline;display: inline-block;padding-right:30px}
+body,div,td{font-size:14px}
+</style>
+<script type="text/javascript">
+$(function() {
+	$.getJSON(ctxUrl("/show.do?obj=server"), function(result) {
+		if(result&&result.status==200){
+			if(result.data){
+				var t=$('#st');
+				$.each(result.data, function( index, row ) {
+					var sn=row.ip;
+					 if(row.name!=null){
+						 sn=sn+"["+row.name+"]";
+					 }
+					t.append('<a class="slink" href="#" data-ip="'+row.ip+'" title="目录:'+row.logDir+'">'+sn+'</a>');
+				});
+			}
+		}else{
+			alert(result.message);
+		}
+	})
+	
+	$("#st").on("click",".slink",function() {
+		var sip=$(this).data("ip");
+		addTab(sip,ctxUrl("/show.html?ip="+sip));
+	});
+});
+function addTab(title, href){
+    var tabPanel = $('#mainTab');
+    if(!tabPanel.tabs('exists',title)){
+        var content = '<iframe frameborder="0" src="'+ href +'" style="width:100%;height:100%;"></iframe>';
+        tabPanel.tabs('add',{
+            title:title,
+            content:content,
+            fit:true,
+            closable:true
+        });
+    }
+    else
+    {
+        tabPanel.tabs('select',title);
+    }
+}
+</script>
+</head>
+<body class="easyui-layout">
+
+<div id="headPanel" data-options="region:'north',border:false,split:true" 
+    style="overflow:hidden;height:40px;padding:10px">
+	<div id="st" style="width:90%;float: left"><span>服务器列表:</span></div>
+	<div style="float:right;width:10%"><a href="/logviewer/logout">注销</a></div>
+</div>
+<div id="mainPanel" data-options="region:'center'">
+	<div id="mainTab" class="easyui-tabs" data-options="border:true,fit:true" style="width:100%;">  
+	 </div>
+ </div>
+</script>
+</body>
+</html>

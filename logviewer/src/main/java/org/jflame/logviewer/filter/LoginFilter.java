@@ -1,42 +1,42 @@
 package org.jflame.logviewer.filter;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.annotation.WebInitParam;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.jflame.logviewer.util.Config;
+import org.jflame.commons.model.CallResult;
+import org.jflame.commons.model.CallResult.ResultEnum;
+import org.jflame.logviewer.SysParam;
+import org.jflame.web.WebUtils;
 import org.jflame.web.filter.IgnoreUrlMatchFilter;
 
-@WebFilter(filterName = "loginFiler", urlPatterns = "/*", initParams = {
-        @WebInitParam(name = "ignorePattern", value = "/login(\\.jsp){0,1}") })
+// @WebFilter(urlPatterns = { "*.do" })
 public class LoginFilter extends IgnoreUrlMatchFilter {
 
-    private String loginPage = "/login.jsp";// 登录页url
-
-    public void destroy() {
-    }
+    private String loginPage = "/index.html";// 登录页url
 
     @Override
     protected void doInternalFilter(ServletRequest req, ServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpSession session = request.getSession();
-        Map<String,String> user = (Map<String,String>) session.getAttribute(Config.SESSION_CURRENT_USER);
-        if (user != null) {
+        if (session.getAttribute(SysParam.SESSION_CURRENT_USER) != null) {
             chain.doFilter(request, response);
         } else {
             HttpServletResponse res = (HttpServletResponse) response;
-            res.sendRedirect(request.getContextPath() + loginPage);
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            if (WebUtils.isAjaxRequest(request)) {
+                WebUtils.outJson(res, new CallResult<>(ResultEnum.NO_AUTH));
+            } else {
+                res.sendRedirect(request.getContextPath() + loginPage);
+            }
         }
     }
 

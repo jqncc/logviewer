@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>日志浏览</title>
+<link rel="stylesheet" type="text/css" href="js/plugins/easyui/themes/material/easyui.css">
+<link rel="stylesheet" type="text/css" href="js/plugins/easyui/themes/icon.css">
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plugins/easyui/jquery.easyui.min.js"></script>
+<style type="text/css">
+p{line-height:200%}
+label{display: inline-block;width:80px}
+.tree-title,.datagrid-cell{font-size:14px}
+#content{display:flex}
+#nav{flex:1;}
+#console{
+	width:960px;
+    font-size:12px;}
+#statusbar{
+	line-height:30px;
+    background-color: #f2f2f2;
+    color:#333;
+    padding:5px 10px;
+}
+#statusText{color:red}
+#outarea{height:700px;width:100%;background-color: #333;color:#fff;padding:10px 2px;}
+</style>
+</head>
+<body>
+<div id="loginWin" style="width:400px;height:200px;padding:10px">
+	<form autocomplete="off">
+	<p><label>用户名:</label> <input id="shelluser" name="shelluser" type="text" autocomplete="off"></p>
+	<p><label>密码:</label> <input id="shellpwd" name="shellpwd" type="password" autocomplete="off"></p>
+	</form>
+</div>
+<div id="content" on>
+	<div id="nav">
+		<div id="loader"><img alt="加载中..." src="js/plugins/easyui/themes/material/images/loading.gif" align="middle">远程目录加载中...</div>
+		<table id="browser" style="width:100%;"></table>
+	</div>
+	<div id="console">
+		<div id="output">
+			<textarea readonly="readonly" id="outarea"></textarea>
+		</div>
+		<div id="statusbar">
+			<input style="width:500px;font-size:14px;height:24px" id="cmdInput">
+			<button onclick="sendCmd()">执行</button>&nbsp;
+			<button onclick="cls()">清屏</button>&nbsp;
+			<button onclick="openWebSocket()" id="btnConn">连接</button>
+			<span id="statusText"></span>
+		</div>
+		<div>只允许tail,tailf,cat,head命令</div>
+	</div>
+</div>
+<script type="text/javascript">
+var ip;
+var showUrl=ctxUrl("/show.do");
+$(function(){
+	ip=getQueryParam("ip");
+	$('#browser').treegrid({
+	      idField:'id',
+	      treeField:'label',
+	      border:false,
+	      lines:true,
+	      onBeforeLoad:function(row, param){$('#loader').show();},
+	      onLoadSuccess:function(row, data){$('#loader').hide();},
+	      columns:[[
+	          {title:'文件名',field:'label',width:'50%'},
+	          {title:'最近修改日期',field:'lastUpdateDate',width:'25%',formatter:function(val,row){return row['attributes']['lastUpdateDate'];}},
+	          {title:'文件大小',field:'size',width:'15%',formatter:function(val,row){return row['attributes']['size']||"";}},
+	          {title:'操作',field:'path',width:'10%',formatter:function(val,row){
+	        	  if(row['attributes']['dir']==false){
+	        	  	 var linkD= '<a href="'+showUrl+'?obj=down&ip='+ip+'&f='+row.path+'" target="_blank">下载</a>';
+	        	  	 var linkL= '<a href="javascript:void(0)" onclick="tailLog(\''+row.path+'\')">监听</a>';
+	        	  	 return linkD+" | "+linkL;
+	        	  	}
+	        	  return "";
+	        	  }
+	          }
+	      ]]
+	  });
+	
+	$('#loginWin').dialog({
+		title:'登录'+ip,
+		modal:true,
+		closed:true,
+		closable:false,
+		buttons:[{
+			text:'确定',
+			handler:function(){
+				showFiles();
+				$('#loginWin').dialog('close');
+			}
+		}]
+	});
+	
+	showFiles();
+	
+	$('#cmdInput').bind('keydown', function (event) {
+        var event = window.event || arguments.callee.caller.arguments[0];
+        if (event.keyCode == 13){
+            sendCmd();
+        }
+    });
+});
+ 
+function getQueryParam(param){
+	var queryString = new String(window.location.search); 
+    queryString = queryString.substr(1, queryString.length);
+    aPairs = queryString.split("&"); 
+    for (var i = 0; i < aPairs.length; i++) { 
+        aTmp = aPairs[i].split("="); 
+        if(aTmp[0]==param)
+        	return  aTmp[1];
+    } 
+}
+function showFiles(){
+	var n=$('#shelluser').val();
+	var p=$('#shellpwd').val();
+	$.ajax({
+		url:showUrl,
+		method:'POST',
+		data:{"obj":'file',"ip":ip,"su":n,"sp":p},
+		dataType:'json',
+		success:function(result){
+			if(result.status==4001){
+				$('#loginWin').dialog('open');
+			}else if(result.status==200){
+				$('#browser').treegrid('loadData',result.data);
+			}else{
+				alert(result.message);
+			}
+		}
+	});
+}
+function cls(){
+	$('#outarea').val('');
+}
+window.onbeforeunload = function(event) {
+    if(ws){
+    	ws.close();
+    }
+};
+var ws;
+function openWebSocket(){
+	 if(ws){
+		 return;
+	 }
+     ws = new WebSocket('ws://'+window.location.host+ctxUrl('/shell.do')+'?ip='+ip);
+     ws.onopen = function()
+     {
+     	modstatus("已连接");
+     	 $('#btnConn').prop('disabled','disabled');
+     };
+     ws.onclose = function(evt)
+     {
+      	modstatus("已关闭.");
+     	$('#btnConn').prop('disabled','false');
+     };
+     ws.onmessage = function(event) {
+    	 //console.log("rev:"+event.data);
+    	 if(event.data)
+     		appendOutarea(event.data);
+         //console.log($c.prop('scrollHeight'));
+     };
+     ws.onerror = function(evt) { 
+     	modstatus(evt.data);
+     }; 
+ }
+
+function modstatus(text){
+ $('#statusText').text(text);
+}
+function appendOutarea(text){
+	var $c=$('#outarea');
+	$c.val($c.val()+"\n"+text);
+	$c.scrollTop($c.prop('scrollHeight'));// 滚动条滚动到底部
+}
+var allowedCmds=["tail ","tailf ","cat ","head "];
+function sendCmd(){
+  var cmd=$('#cmdInput').val();
+  if(cmd==""){
+	  return;
+  }
+  var isAllow=false;
+  $.each(allowedCmds,function(index, v){
+	  if(!cmd.startsWith(v)){
+		  isAllow=true;
+		  return;
+	  }
+  })
+  if(!isAllow){
+	  alert("不支持的命令");
+	  return;
+  }
+  if(!ws||ws.readyState!=1){
+	  alert("未连接,请先连接服务器");
+	  return;
+  }
+  if(ws.readyState==1){
+	  appendOutarea("> "+cmd+"\n");
+	  ws.send($.trim(cmd));
+	  $('#cmdInput').val('');
+  }
+}
+function tailLog(log){
+	var cmd="tail -f "+log;
+	$('#cmdInput').val(cmd);
+	sendCmd();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>登录-日志查看</title>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<style type="text/css">
+#loginDiv{margin-top:100px;margin-left:200px;width:300px}
+p{line-height:200%}
+label{display: inline-block;width:80px}
+</style>
+</head>
+<body>
+<div id="loginDiv">
+		<p><label>用户名:</label> <input id="uname" name="uname" type="text"></p>
+		<p><label>密码:</label> <input id="upwd" name="upwd" type="password"></p>
+		<p style="text-align:right;padding-right:50px"><button onclick="login()"> 登 录 </button></p>
+</div>
+<script type="text/javascript">
+function login(){
+	var n=$('#uname').val();
+	var p=$('#upwd').val();
+	if(n==""){
+		alert("请输入用户名");
+		return;
+	}
+	if(p==""){
+		alert("请输入密码");
+		return;
+	}
+	$.ajax({
+		url:ctxUrl('/login'),
+		method:'POST',
+		data:{uname:n,upwd:p},
+		dataType:"json",
+		success:function(result){
+			if(result&&result.status==200){
+				location.href="main.html";
+			}else{
+				alert(result.message);
+			}
+		}
+	});
+}
+</script>
+</body>
+</html>

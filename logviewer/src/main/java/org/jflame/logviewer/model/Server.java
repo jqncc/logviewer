@@ -1,22 +1,37 @@
 package org.jflame.logviewer.model;
 
 import java.io.Serializable;
-import java.util.Set;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.alibaba.fastjson.annotation.JSONField;
 
 /**
  * 服务器信息
  * 
- * @author yucan.zhang
+ * @author yucan.zhang, Cloneable
  */
-public class Server implements Serializable {
+@XmlAccessorType(XmlAccessType.FIELD)
+public class Server implements Serializable, Cloneable {
 
-    private static final long serialVersionUID = -7081434072194904353L;
+    private static final long serialVersionUID = 7306324708429221895L;
     private String name;
     private String ip;
-    private String desc;
+
+    @JSONField(serialize = false)
     private String user;
+
+    @XmlElement
+    @JSONField(serialize = false)
     private String pwd;
-    private Set<Container> tomcats;
+
+    private int port = 22;
+    @XmlElement(name = "log_dir")
+    private String logDir;
 
     public String getName() {
         return name;
@@ -34,20 +49,19 @@ public class Server implements Serializable {
         this.ip = ip;
     }
 
-    public String getDesc() {
-        return desc;
+    public String getLogDir() {
+        return logDir;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public String[] dirs() {
+        if (logDir != null) {
+            return StringUtils.deleteWhitespace(logDir).split(",");
+        }
+        return null;
     }
 
-    public Set<Container> getTomcats() {
-        return tomcats;
-    }
-
-    public void setTomcats(Set<Container> tomcats) {
-        this.tomcats = tomcats;
+    public void setLogDir(String logDir) {
+        this.logDir = logDir;
     }
 
     public String getUser() {
@@ -56,6 +70,14 @@ public class Server implements Serializable {
 
     public void setUser(String user) {
         this.user = user;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public String getPwd() {
@@ -67,8 +89,38 @@ public class Server implements Serializable {
     }
 
     @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
+    @Override
     public String toString() {
-        return "Server [name=" + name + ", ip=" + ip + ", desc=" + desc + ", user=" + user + "]";
+        StringBuilder builder = new StringBuilder();
+        builder.append("Server [");
+        if (name != null) {
+            builder.append("name=");
+            builder.append(name);
+            builder.append(", ");
+        }
+        if (ip != null) {
+            builder.append("ip=");
+            builder.append(ip);
+            builder.append(", ");
+        }
+        if (user != null) {
+            builder.append("user=");
+            builder.append(user);
+            builder.append(", ");
+        }
+        builder.append("port=");
+        builder.append(port);
+        builder.append(", ");
+        if (logDir != null) {
+            builder.append("logDir=");
+            builder.append(logDir);
+        }
+        builder.append("]");
+        return builder.toString();
     }
 
 }
