@@ -1,8 +1,6 @@
 package org.jflame.logviewer.action;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,9 +64,9 @@ public class LoginServlet extends HttpServlet {
         return false;
     }
 
-    public static void main(String[] args) {
+    /* public static void main(String[] args) {
         // System.out.println(DigestHelper.sha256Hex("look@2020&&loger"));
-
+    
         Path classRunDir = Paths.get("D:\\repository\\ant\\ant\\1.6.5\\ant-1.6.5.jar");
         if (classRunDir.toString().endsWith(".jar")) {
             classRunDir = classRunDir.getParent();
@@ -77,5 +75,5 @@ public class LoginServlet extends HttpServlet {
             }
         }
         System.out.println("--" + classRunDir);
-    }
+    }*/
 }
