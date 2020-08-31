@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jflame.commons.codec.TranscodeHelper;
-import org.jflame.commons.exception.BusinessException;
 import org.jflame.commons.exception.RemoteAccessException;
 import org.jflame.commons.model.CallResult;
 import org.jflame.commons.model.CallResult.ResultEnum;
@@ -97,9 +96,6 @@ public class ShowServlet extends HttpServlet {
         try {
             if (ArrayHelper.isNotEmpty(dirs)) {
                 SFTPClient client = SSHClientFactory.getFtpClient(request.getSession(false).getId(), connServer);
-                if (isNeedSaveCfg) {
-                    ServerCfg.save();
-                }
                 FileAttri root = null;
                 for (String dir : dirs) {
                     root = new FileAttri();
@@ -116,17 +112,20 @@ public class ShowServlet extends HttpServlet {
                 }
                 result.setResult(ResultEnum.SUCCESS);
                 result.setData(fileAttris);
+                if (isNeedSaveCfg) {
+                    ServerCfg.save();
+                }
             } else {
                 result.paramError("未配置日志目录");
             }
-        } catch (BusinessException e) {
-            if (e.getStatus() == 4001) {
+        } catch (RemoteAccessException e) {
+            if (e.getStatusCode() == 4001) {
                 connServer.setUser(null);
                 connServer.setPwd(null);
+                result.status(4001).message(e.getMessage());
+            } else {
+                result.error(e.getMessage());
             }
-            result.result(e);
-        } catch (RemoteAccessException e) {
-            result.error(e.getMessage());
         }
     }
 

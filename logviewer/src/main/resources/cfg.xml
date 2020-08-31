@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <servers>
     <server>
+    	<name>test95</name>
         <ip>10.18.200.95</ip>
         <port>22</port>
         <log_dir>/webserver/logs</log_dir>
         <exclude_log>/webserver/logs/zp_msg</exclude_log>
     </server>
     <server>
+    	<name>test95</name>
         <ip>10.18.200.96</ip>
         <port>22</port>
         <log_dir>/webserver/logs</log_dir>

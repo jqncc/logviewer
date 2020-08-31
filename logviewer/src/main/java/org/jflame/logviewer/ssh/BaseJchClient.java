@@ -56,6 +56,10 @@ public abstract class BaseJchClient implements Closeable {
             }
         } catch (JSchException e) {
             logger.error("ftp连接异常,ip:{},ex:{}", serverInfo.getIp(), e);
+            if ("Auth fail".equals(e.getMessage()) || "Auth cancel".equals(e.getMessage())) {
+                session = null;
+                throw new RemoteAccessException("远程连接用户验证失败", 4001);
+            }
             throw new RemoteAccessException(e);
         }
     }
