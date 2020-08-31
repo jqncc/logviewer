@@ -44,9 +44,10 @@ label{display: inline-block;width:80px}
 		</div>
 		<div id="statusbar">
 			<input style="width:500px;font-size:14px;height:24px" id="cmdInput">
-			<button onclick="sendCmd()">执行</button>&nbsp;
-			<button onclick="cls()">清屏</button>&nbsp;
+			<button onclick="sendCmd()">执行</button>&nbsp;&nbsp;&nbsp;&nbsp;
+			<button onclick="cls()">清屏</button>&nbsp;&nbsp;&nbsp;&nbsp;
 			<button onclick="openWebSocket()" id="btnConn">连接</button>
+			<button onclick="closeWebSocket()" id="btnDisconn" disabled="disabled">关闭连接</button>
 			<span id="statusText"></span>
 		</div>
 		<div>只允许tail,tailf,cat,head命令</div>
@@ -137,7 +138,7 @@ function cls(){
 	$('#outarea').val('');
 }
 window.onbeforeunload = function(event) {
-    if(ws){
+    if(ws&&ws.readyState==1){
     	ws.close();
     }
 };
@@ -146,16 +147,18 @@ function openWebSocket(){
 	 if(ws){
 		 return;
 	 }
-     ws = new WebSocket('ws://'+window.location.host+ctxUrl('/shell.do')+'?ip='+ip);
+	 var protocol=window.location.protocol.toLowerCase()=="https:"?"wss":"ws";
+     ws = new WebSocket(protocol+'://'+window.location.host+ctxUrl('/shell.do')+'?ip='+ip);
      ws.onopen = function()
      {
-     	modstatus("已连接");
-     	 $('#btnConn').prop('disabled','disabled');
+    	 statusToggle(true);
      };
      ws.onclose = function(evt)
      {
-      	modstatus("已关闭.");
-     	$('#btnConn').prop('disabled','false');
+    	 statusToggle(false);
+     	if(evt.data){
+     		console.log(evt.data);
+     	}
      };
      ws.onmessage = function(event) {
     	 //console.log("rev:"+event.data);
@@ -167,7 +170,23 @@ function openWebSocket(){
      	modstatus(evt.data);
      }; 
  }
-
+function closeWebSocket(){
+	if(ws){
+		ws.close();
+		ws=null;
+	}
+}
+function statusToggle(conned){
+	if(conned){
+		$('#btnConn').prop('disabled','disabled');
+		$('#btnDisconn').prop('disabled',false);
+		modstatus("已连接");
+	}else{
+		$('#btnConn').prop('disabled',false);
+		$('#btnDisconn').prop('disabled','disabled');
+		modstatus("已关闭.");
+	}
+}
 function modstatus(text){
  $('#statusText').text(text);
 }

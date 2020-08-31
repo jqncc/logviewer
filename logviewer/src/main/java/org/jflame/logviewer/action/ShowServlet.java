@@ -92,8 +92,9 @@ public class ShowServlet extends HttpServlet {
             }
         }
 
+        String[] dirs = connServer.dirs();
+        String[] excludes = connServer.excludeLogs();
         try {
-            String[] dirs = connServer.dirs();
             if (ArrayHelper.isNotEmpty(dirs)) {
                 SFTPClient client = SSHClientFactory.getFtpClient(request.getSession(false).getId(), connServer);
                 if (isNeedSaveCfg) {
@@ -107,7 +108,7 @@ public class ShowServlet extends HttpServlet {
                     root.setState(TreeNode.STATE_OPEN);
                     root.addAttribute("dir", true);
                     root.setId(Math.abs(dir.hashCode()));
-                    List<FileAttri> lst = client.ls(dir);
+                    List<FileAttri> lst = client.ls(dir, excludes);
                     if (CollectionHelper.isNotEmpty(lst)) {
                         root.addNodes(lst);
                     }

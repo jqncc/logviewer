@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.jflame.commons.exception.PermissionException;
 import org.jflame.commons.exception.RemoteAccessException;
 import org.jflame.commons.model.TreeNode;
@@ -118,23 +119,29 @@ public class SFTPClient extends BaseJchClient {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public List<FileAttri> ls(String remotePath) throws RemoteAccessException {
+    public List<FileAttri> ls(String remotePath, String... excludes) throws RemoteAccessException {
         ChannelSftp sftp = null;
         List<FileAttri> lsFiles = new ArrayList<>();
         FileAttri tmpFileAttri;
         long tmpSize;
+        String tmpFullPath;
         try {
             sftp = openChannel();
             Vector<LsEntry> vector = sftp.ls(remotePath);
+
             for (LsEntry entry : vector) {
                 if (".".equals(entry.getFilename()) || "..".equals(entry.getFilename())) {
                     continue;
                 }
-
+                tmpFullPath = UrlHelper.mergeUrl(remotePath, entry.getFilename());
+                if (excludes != null && ArrayUtils.contains(excludes, tmpFullPath)) {
+                    logger.debug("忽略目录:{}", tmpFullPath);
+                    continue;
+                }
                 tmpFileAttri = new FileAttri();
                 tmpFileAttri.setLabel(entry.getFilename());
                 tmpFileAttri.setLastUpdateDate(entry.getAttrs().getATime());
-                tmpFileAttri.setPath(UrlHelper.mergeUrl(remotePath, entry.getFilename()));
+                tmpFileAttri.setPath(tmpFullPath);
                 tmpFileAttri.setId(Math.abs(tmpFileAttri.getPath().hashCode()));
                 tmpFileAttri.addAttribute("dir", false);
                 // System.out.println(entry.getFilename() + " p:" + entry.getAttrs().getPermissions());
@@ -143,7 +150,7 @@ public class SFTPClient extends BaseJchClient {
                     tmpFileAttri.setState(TreeNode.STATE_CLOSED);
                     tmpFileAttri.addAttribute("dir", true);
                     try {
-                        List<FileAttri> childs = ls(tmpFileAttri.getPath());
+                        List<FileAttri> childs = ls(tmpFileAttri.getPath(), excludes);
                         if (CollectionHelper.isNotEmpty(childs)) {
                             tmpFileAttri.addNodes(childs);
                         }

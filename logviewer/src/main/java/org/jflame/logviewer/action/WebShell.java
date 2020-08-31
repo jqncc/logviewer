@@ -122,7 +122,9 @@ public class WebShell {
     public void onClose(CloseReason cr) {
         webShellList.remove(this);
         try {
-            curSSHClient.close();
+            if (curSSHClient != null) {
+                curSSHClient.close();
+            }
         } catch (IOException e) {
             logger.error("关闭远程连接异常", e);
         }

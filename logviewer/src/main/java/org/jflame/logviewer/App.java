@@ -11,6 +11,13 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.jflame.commons.util.StringHelper;
 
+/**
+ * 启动程序https://github.com/jqncc/logviewer
+ * 
+ * @author yucan.zhang
+ * 
+ *
+ */
 public class App {
 
     public static void main(String[] args) throws Exception {

@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jflame.commons.util.StringHelper;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
@@ -28,10 +29,17 @@ public class Server implements Serializable, Cloneable {
     @XmlElement
     @JSONField(serialize = false)
     private String pwd;
-
+    /**
+     * 日志目录,多个以逗号分隔
+     */
     private int port = 22;
     @XmlElement(name = "log_dir")
     private String logDir;
+    /**
+     * 要排除的日志目录,多个以逗号分隔
+     */
+    @XmlElement(name = "exclude_log")
+    private String excludeLog;
 
     public String getName() {
         return name;
@@ -54,8 +62,15 @@ public class Server implements Serializable, Cloneable {
     }
 
     public String[] dirs() {
-        if (logDir != null) {
+        if (StringHelper.isNotEmpty(logDir)) {
             return StringUtils.deleteWhitespace(logDir).split(",");
+        }
+        return null;
+    }
+
+    public String[] excludeLogs() {
+        if (StringHelper.isNotEmpty(excludeLog)) {
+            return StringUtils.deleteWhitespace(excludeLog).split(",");
         }
         return null;
     }
@@ -88,6 +103,14 @@ public class Server implements Serializable, Cloneable {
         this.pwd = pwd;
     }
 
+    public String getExcludeLog() {
+        return excludeLog;
+    }
+
+    public void setExcludeLog(String excludeLog) {
+        this.excludeLog = excludeLog;
+    }
+
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
@@ -118,6 +141,10 @@ public class Server implements Serializable, Cloneable {
         if (logDir != null) {
             builder.append("logDir=");
             builder.append(logDir);
+        }
+        if (excludeLog != null) {
+            builder.append("excludeLog=");
+            builder.append(excludeLog);
         }
         builder.append("]");
         return builder.toString();
