@@ -56,6 +56,7 @@ label{display: inline-block;width:80px}
 <script type="text/javascript">
 var ip;
 var showUrl=ctxUrl("/show.do");
+var initLoaded=false;
 $(function(){
 	ip=getQueryParam("ip");
 	$('#browser').treegrid({
@@ -63,8 +64,8 @@ $(function(){
 	      treeField:'label',
 	      border:false,
 	      lines:true,
-	      onBeforeLoad:function(row, param){$('#loader').show();},
-	      onLoadSuccess:function(row, data){$('#loader').hide();},
+	      onBeforeLoad:function(row, param){if(!initLoaded)$('#loader').show();},
+	      onLoadSuccess:function(row, data){$('#loader').hide();initLoaded=true},
 	      columns:[[
 	          {title:'文件名',field:'label',width:'50%'},
 	          {title:'最近修改日期',field:'lastUpdateDate',width:'25%',formatter:function(val,row){return row['attributes']['lastUpdateDate'];}},
