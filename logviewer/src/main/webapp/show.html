@@ -68,7 +68,7 @@ $(function(){
 	      onLoadSuccess:function(row, data){$('#loader').hide();initLoaded=true},
 	      columns:[[
 	          {title:'文件名',field:'label',width:'50%'},
-	          {title:'最近修改日期',field:'lastUpdateDate',width:'25%',formatter:function(val,row){return row['attributes']['lastUpdateDate'];}},
+	          {title:'最近修改日期',field:'updateDateText',width:'25%'},
 	          {title:'文件大小',field:'size',width:'15%',formatter:function(val,row){return row['attributes']['size']||"";}},
 	          {title:'操作',field:'path',width:'10%',formatter:function(val,row){
 	        	  if(row['attributes']['dir']==false){

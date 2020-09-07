@@ -5,21 +5,28 @@
 <title>登录-日志查看</title>
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <style type="text/css">
-#loginDiv{margin-top:100px;margin-left:200px;width:300px}
+#loginDiv{margin-top:100px;margin-left:200px;width:400px}
 p{line-height:200%}
-label{display: inline-block;width:80px}
+label{display: inline-block;width:75px}
+input{width: 200px;height:24px;line-height:24px;vertical-align:middle;}
+#validcodeImg{cursor: pointer;margin-left:5px;vertical-align:middle;}
+#btnP{padding-left:75px;}
+#btnP button{width:70px;height:30px; text-align:center;}
 </style>
 </head>
 <body>
 <div id="loginDiv">
 		<p><label>用户名:</label> <input id="uname" name="uname" type="text"></p>
 		<p><label>密码:</label> <input id="upwd" name="upwd" type="password"></p>
-		<p style="text-align:right;padding-right:50px"><button onclick="login()"> 登 录 </button></p>
+		<p><label>验证码:</label> <input id="validcode" name="validcode" style="width:100px" onfocus="startValidCode()">
+		<img id="validcodeImg" alt="验证码" title="点击刷新" onclick="refreshValidCode()"></p>
+		<p id="btnP"><button onclick="login()"> 登 录 </button></p>
 </div>
 <script type="text/javascript">
 function login(){
 	var n=$('#uname').val();
 	var p=$('#upwd').val();
+	var v=$('#validcode').val();
 	if(n==""){
 		alert("请输入用户名");
 		return;
@@ -28,10 +35,14 @@ function login(){
 		alert("请输入密码");
 		return;
 	}
+	if(v==""){
+		alert("请输入验证码");
+		return;
+	}
 	$.ajax({
 		url:ctxUrl('/login'),
 		method:'POST',
-		data:{uname:n,upwd:p},
+		data:{uname:n,upwd:p,vcode:v},
 		dataType:"json",
 		success:function(result){
 			if(result&&result.status==200){
@@ -41,6 +52,19 @@ function login(){
 			}
 		}
 	});
+}
+function startValidCode(){console.log("==="+$('#validcodeImg').prop("src"));
+	if($('#validcodeImg').prop("src")==""){
+		refreshValidCode();
+	}
+}
+function refreshValidCode(){
+	var r=random(10,1000);
+	$('#validcodeImg').prop("src",ctxUrl('/validcode')+"?h=30&r="+r)
+}
+
+function random(lower, upper) {
+	return Math.floor(Math.random() * (upper - lower+1)) + lower;
 }
 </script>
 </body>

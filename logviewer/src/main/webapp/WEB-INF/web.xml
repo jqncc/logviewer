@@ -63,6 +63,15 @@
 		<servlet-name>logoutServlet</servlet-name>
 		<url-pattern>/logout</url-pattern>
 	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>validCodeServlet</servlet-name>
+		<servlet-class>org.jflame.web.servlet.ValidateCodeServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>validCodeServlet</servlet-name>
+		<url-pattern>/validcode</url-pattern>
+	</servlet-mapping>
 
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>

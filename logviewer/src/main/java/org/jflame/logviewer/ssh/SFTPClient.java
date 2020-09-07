@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
@@ -181,6 +182,7 @@ public class SFTPClient extends BaseJchClient {
                 sftp.disconnect();
             }
         }
+        Collections.sort(lsFiles);
         return lsFiles;
     }
 

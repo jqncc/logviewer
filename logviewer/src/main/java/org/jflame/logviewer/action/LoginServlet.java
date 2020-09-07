@@ -12,6 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import org.jflame.commons.crypto.DigestHelper;
 import org.jflame.commons.model.CallResult;
+import org.jflame.commons.model.CallResult.ResultEnum;
 import org.jflame.commons.util.StringHelper;
 import org.jflame.logviewer.SysParam;
 import org.jflame.web.WebUtils;
@@ -36,22 +37,37 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         String uname = request.getParameter("uname");
         String upwd = request.getParameter("upwd");
-        if (StringHelper.isNotEmpty(uname) && StringHelper.isNotEmpty(upwd)) {
-            if (checkUser(uname.trim(), upwd.trim())) {
-                HttpSession session = request.getSession(false);
-                if (session != null) {
-                    session.invalidate();
-                }
-                Map<String,String> user = new HashMap<>();
-                user.put("name", uname);
-                session = request.getSession(true);
-                session.setAttribute(SysParam.SESSION_CURRENT_USER, user);
-                WebUtils.outJson(response, new CallResult<>());
-                return;
-            }
+        String validCode = request.getParameter("vcode");
+        CallResult<String> result = new CallResult<>(ResultEnum.PARAM_ERROR);
+        if (StringHelper.isEmpty(validCode)) {
+            WebUtils.outJson(response, result.message("请输入验证码"));
+            return;
         }
-        WebUtils.outJson(response, new CallResult<>().paramError("用户名或密码不正确"));
-        return;
+        if (StringHelper.isEmpty(uname)) {
+            WebUtils.outJson(response, result.message("请输入用户名"));
+            return;
+        }
+        if (StringHelper.isEmpty(upwd)) {
+            WebUtils.outJson(response, result.message("请输入密码"));
+            return;
+        }
+        HttpSession session = request.getSession();
+        String curValidCode = (String) session.getAttribute("validcode");
+        if (!validCode.equalsIgnoreCase(curValidCode)) {
+            WebUtils.outJson(response, result.message("验证码错误"));
+            return;
+        }
+        if (checkUser(uname.trim(), upwd.trim())) {
+            session.invalidate();
+
+            Map<String,String> user = new HashMap<>();
+            user.put("name", uname);
+            session = request.getSession(true);
+            session.setAttribute(SysParam.SESSION_CURRENT_USER, user);
+            WebUtils.outJson(response, result.success(uname));
+        } else {
+            WebUtils.outJson(response, result.message("用户名或密码错误"));
+        }
     }
 
     private boolean checkUser(String loginUser, String loginPwd) {
