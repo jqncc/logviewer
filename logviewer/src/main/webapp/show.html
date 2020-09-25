@@ -96,7 +96,7 @@ $(function(){
 		}]
 	});
 	
-	showFiles();
+	//showFiles();
 	
 	$('#cmdInput').bind('keydown', function (event) {
         var event = window.event || arguments.callee.caller.arguments[0];
@@ -148,11 +148,14 @@ function openWebSocket(){
 	 if(ws){
 		 return;
 	 }
+	 
 	 var protocol=window.location.protocol.toLowerCase()=="https:"?"wss":"ws";
      ws = new WebSocket(protocol+'://'+window.location.host+ctxUrl('/shell.do')+'?ip='+ip);
+    // ws = new WebSocket("wss://cis.sztobacco.cn:6869/cishop-business/websocket/1173808332997591043");
      ws.onopen = function()
      {
     	 statusToggle(true);
+    	 ws.send("Heartbeat");
      };
      ws.onclose = function(evt)
      {

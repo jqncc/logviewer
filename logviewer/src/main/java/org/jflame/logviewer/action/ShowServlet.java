@@ -1,6 +1,12 @@
 package org.jflame.logviewer.action;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +27,9 @@ import org.jflame.commons.util.CollectionHelper;
 import org.jflame.commons.util.IOHelper;
 import org.jflame.commons.util.StringHelper;
 import org.jflame.commons.util.file.FileHelper;
+import org.jflame.commons.util.file.ZipHelper;
 import org.jflame.logviewer.ServerCfg;
+import org.jflame.logviewer.SysParam;
 import org.jflame.logviewer.model.FileAttri;
 import org.jflame.logviewer.model.Server;
 import org.jflame.logviewer.ssh.SFTPClient;
@@ -41,8 +49,8 @@ public class ShowServlet extends HttpServlet {
             CallResult<List<Server>> result = CallResult.ok(ServerCfg.getServers());
             WebUtils.outJson(response, result);
         } else if ("down".equals(cmd)) {
-            CallResult<Object> result = new CallResult<>();
-            downloadLog(request, response, result);
+            // CallResult<Object> result = new CallResult<>();
+            downloadLog(request, response);
         }
     }
 
@@ -129,23 +137,25 @@ public class ShowServlet extends HttpServlet {
         }
     }
 
-    private void downloadLog(HttpServletRequest request, HttpServletResponse response, CallResult<Object> result)
+    private void downloadLog(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String downFile = request.getParameter("f");
+        PrintWriter out = response.getWriter();
         if (StringHelper.isEmpty(downFile)) {
-            result.paramError("请选择要下载的文件");
+            out.print("请选择要下载的文件");
             return;
         }
+
         String ip = request.getParameter("ip").trim();
         Optional<Server> selectedServer = ServerCfg.getServer(ip);
         if (!selectedServer.isPresent()) {
-            WebUtils.outJson(response, result.paramError(ip + "服务器未配置"));
+            out.print("服务器未配置");
             return;
         }
 
         downFile = TranscodeHelper.urlDecode(downFile);
         if (!"log".equals(FileHelper.getExtension(downFile, false))) {
-            result.paramError("不允许下载的文件类型");
+            out.print("不允许下载的文件类型");
             return;
         }
         Server connServer = selectedServer.get();
@@ -158,24 +168,40 @@ public class ShowServlet extends HttpServlet {
             }
         }
         if (!baseDirOk) {
-            result.paramError("文件路径不正确");
+            out.print("文件路径不正确");
             return;
         }
-
         ServletOutputStream output = null;
         try {
+            String downFileDir = FileHelper.getDir(downFile);
+            Path downFileDirPath = Paths.get(SysParam.TMP_DIR, ip, downFileDir);
+            Files.createDirectories(downFileDirPath);
+            String downFilename = FileHelper.getFilename(downFile);
+
             SFTPClient client = SSHClientFactory.getFtpClient(request.getSession(false).getId(), connServer);
-            byte[] downBytes = client.getFile(downFile);
-            WebUtils.setFileDownloadHeader(response, FileHelper.getFilename(downFile), (long) downBytes.length);
-            output = response.getOutputStream();
-            IOHelper.write(downBytes, output);
+            if ("1".equals(request.getParameter("enablezip"))) {
+                String dstFile = downFileDirPath.resolve(downFilename).toString();
+                client.download(downFile, dstFile);
+                ZipHelper.zip(dstFile, downFileDirPath.toString(), downFilename + ".zip", true, StandardCharsets.UTF_8);
+                InputStream input = Files.newInputStream(downFileDirPath.resolve(downFilename + ".zip"));
+                response.setBufferSize(160192);// 16k
+                output = response.getOutputStream();
+                IOHelper.copy(input, output, new byte[8096]);
+                WebUtils.setFileDownloadHeader(response, downFilename, (long) input.available());
+                input.close();
+            } else {
+                byte[] downBytes = client.getFile(downFile);
+                WebUtils.setFileDownloadHeader(response, downFilename, (long) downBytes.length);
+                output = response.getOutputStream();
+                IOHelper.write(downBytes, output);
+            }
             output.flush();
         } catch (RemoteAccessException e) {
-            result.status(e.getStatusCode() > 0 ? e.getStatusCode() : ResultEnum.SERVER_ERROR.getStatus())
-                    .message(e.getMessage());
+            e.printStackTrace(out);
         } catch (Exception e) {
-            result.status(ResultEnum.SERVER_ERROR.getStatus()).message(e.getMessage());
+            e.printStackTrace(out);
         }
 
     }
+
 }

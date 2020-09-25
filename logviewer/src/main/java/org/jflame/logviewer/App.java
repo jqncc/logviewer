@@ -1,6 +1,7 @@
 package org.jflame.logviewer;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -63,8 +64,6 @@ public class App {
         // addFilters(context);
         // context.getServletContext().addListener(new MySessionListener());
 
-        tomcat.start();
-        tomcat.getServer().await();
         Runtime.getRuntime().addShutdownHook(new Thread() {
 
             @Override
@@ -78,6 +77,14 @@ public class App {
                 System.out.println("stopped logviewer");
             }
         });
+
+        Path tmpDir = classRunDir.resolve("temp");
+        if (!Files.exists(tmpDir)) {
+            Files.createDirectories(tmpDir);
+            SysParam.TMP_DIR = tmpDir.toString();
+        }
+        tomcat.start();
+        tomcat.getServer().await();
     }
 
     /* private static void addServlets(Context ctx) {

@@ -10,6 +10,8 @@ public final class SysParam {
     }
     public static String SESSION_CURRENT_USER = "current_user_key";
 
+    public static String TMP_DIR;
+
     /**
      * 程序监听端口
      * 

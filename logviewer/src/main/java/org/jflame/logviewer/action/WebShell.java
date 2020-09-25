@@ -170,7 +170,7 @@ public class WebShell {
 
     @OnError
     public void onError(Throwable thr) {
-        logger.error("websocket连接错误", thr.getMessage());
+        logger.error("websocket连接错误", thr);
     }
 
     protected String getCurHttpSessionId() {
