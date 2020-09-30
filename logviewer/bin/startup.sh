@@ -52,7 +52,7 @@ export JAVA="$JAVA_HOME/bin/java"
 #===========================================================================================
 # JVM Configuration
 #===========================================================================================
-JAVA_OPT="-server -Xms128m -Xmx128m -Xss256k"
+JAVA_OPT="-server -Xms128m -Xmx256m -Xss256k"
 JAVA_OPT="${JAVA_OPT} -jar ${BASE_DIR}/${mainjar}"
 
 echo "$JAVA ${JAVA_OPT}"

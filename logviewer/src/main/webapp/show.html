@@ -57,6 +57,7 @@ label{display: inline-block;width:80px}
 var ip;
 var showUrl=ctxUrl("/show.do");
 var initLoaded=false;
+
 $(function(){
 	ip=getQueryParam("ip");
 	$('#browser').treegrid({
@@ -72,7 +73,9 @@ $(function(){
 	          {title:'文件大小',field:'size',width:'15%',formatter:function(val,row){return row['attributes']['size']||"";}},
 	          {title:'操作',field:'path',width:'10%',formatter:function(val,row){
 	        	  if(row['attributes']['dir']==false){
-	        	  	 var linkD= '<a href="'+showUrl+'?obj=down&ip='+ip+'&f='+row.path+'" target="_blank">下载</a>';
+	        		 var filesize=row['attributes']['size'];
+	        		 var enablezip=isNeedCompress(filesize)?"1":"0";
+	        	  	 var linkD= '<a href="'+showUrl+'?obj=down&ip='+ip+'&f='+encodeURIComponent(row.path)+'&enablezip='+enablezip+'" target="_blank">下载</a>';
 	        	  	 var linkL= '<a href="javascript:void(0)" onclick="tailLog(\''+row.path+'\')">监听</a>';
 	        	  	 return linkD+" | "+linkL;
 	        	  	}
@@ -96,7 +99,7 @@ $(function(){
 		}]
 	});
 	
-	//showFiles();
+	showFiles();
 	
 	$('#cmdInput').bind('keydown', function (event) {
         var event = window.event || arguments.callee.caller.arguments[0];
@@ -134,6 +137,17 @@ function showFiles(){
 			}
 		}
 	});
+}
+var sizeRegx=/[m|k]*b/i;
+/**
+ * 判断文件是否需要压缩传输.大于5M压缩
+ */
+function isNeedCompress(filesize){
+	filesize=filesize.replace(sizeRegx,"");
+	if(parseFloat(filesize)>5){
+		return true;
+	}
+	return false;
 }
 function cls(){
 	$('#outarea').val('');

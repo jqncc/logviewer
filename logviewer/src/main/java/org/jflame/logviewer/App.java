@@ -63,7 +63,11 @@ public class App {
         // addServlets(context);
         // addFilters(context);
         // context.getServletContext().addListener(new MySessionListener());
-
+        Path tmpDir = classRunDir.resolve("temp");
+        if (!Files.exists(tmpDir)) {
+            Files.createDirectories(tmpDir);
+        }
+        SysParam.TMP_DIR = tmpDir.toString();
         Runtime.getRuntime().addShutdownHook(new Thread() {
 
             @Override
@@ -78,11 +82,6 @@ public class App {
             }
         });
 
-        Path tmpDir = classRunDir.resolve("temp");
-        if (!Files.exists(tmpDir)) {
-            Files.createDirectories(tmpDir);
-            SysParam.TMP_DIR = tmpDir.toString();
-        }
         tomcat.start();
         tomcat.getServer().await();
     }

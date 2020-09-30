@@ -2,7 +2,6 @@ package org.jflame.logviewer.action;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -112,7 +111,9 @@ public class ShowServlet extends HttpServlet {
                     root.setState(TreeNode.STATE_OPEN);
                     root.addAttribute("dir", true);
                     root.setId(Math.abs(dir.hashCode()));
+
                     List<FileAttri> lst = client.ls(dir, excludes);
+
                     if (CollectionHelper.isNotEmpty(lst)) {
                         root.addNodes(lst);
                     }
@@ -140,22 +141,21 @@ public class ShowServlet extends HttpServlet {
     private void downloadLog(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String downFile = request.getParameter("f");
-        PrintWriter out = response.getWriter();
         if (StringHelper.isEmpty(downFile)) {
-            out.print("请选择要下载的文件");
+            response.getWriter().print("请选择要下载的文件");
             return;
         }
 
         String ip = request.getParameter("ip").trim();
         Optional<Server> selectedServer = ServerCfg.getServer(ip);
         if (!selectedServer.isPresent()) {
-            out.print("服务器未配置");
+            response.getWriter().print("服务器未配置");
             return;
         }
 
         downFile = TranscodeHelper.urlDecode(downFile);
         if (!"log".equals(FileHelper.getExtension(downFile, false))) {
-            out.print("不允许下载的文件类型");
+            response.getWriter().print("不允许下载的文件类型");
             return;
         }
         Server connServer = selectedServer.get();
@@ -168,10 +168,11 @@ public class ShowServlet extends HttpServlet {
             }
         }
         if (!baseDirOk) {
-            out.print("文件路径不正确");
+            response.getWriter().print("文件路径不正确");
             return;
         }
         ServletOutputStream output = null;
+        InputStream input = null;
         try {
             String downFileDir = FileHelper.getDir(downFile);
             Path downFileDirPath = Paths.get(SysParam.TMP_DIR, ip, downFileDir);
@@ -180,26 +181,30 @@ public class ShowServlet extends HttpServlet {
 
             SFTPClient client = SSHClientFactory.getFtpClient(request.getSession(false).getId(), connServer);
             if ("1".equals(request.getParameter("enablezip"))) {
+                // 压缩后再传
                 String dstFile = downFileDirPath.resolve(downFilename).toString();
+                String dstZipFilename = downFilename + ".zip";
+
                 client.download(downFile, dstFile);
-                ZipHelper.zip(dstFile, downFileDirPath.toString(), downFilename + ".zip", true, StandardCharsets.UTF_8);
-                InputStream input = Files.newInputStream(downFileDirPath.resolve(downFilename + ".zip"));
-                response.setBufferSize(160192);// 16k
+                ZipHelper.zip(dstFile, downFileDirPath.toString(), dstZipFilename, true, StandardCharsets.UTF_8);
+
+                input = Files.newInputStream(downFileDirPath.resolve(dstZipFilename));
+                WebUtils.setFileDownloadHeader(response, dstZipFilename, null);
                 output = response.getOutputStream();
                 IOHelper.copy(input, output, new byte[8096]);
-                WebUtils.setFileDownloadHeader(response, downFilename, (long) input.available());
-                input.close();
+                output.flush();
             } else {
                 byte[] downBytes = client.getFile(downFile);
                 WebUtils.setFileDownloadHeader(response, downFilename, (long) downBytes.length);
                 output = response.getOutputStream();
                 IOHelper.write(downBytes, output);
+                output.flush();
             }
-            output.flush();
-        } catch (RemoteAccessException e) {
-            e.printStackTrace(out);
+
         } catch (Exception e) {
-            e.printStackTrace(out);
+            throw new ServletException(e);
+        } finally {
+            IOHelper.closeQuietly(input);
         }
 
     }

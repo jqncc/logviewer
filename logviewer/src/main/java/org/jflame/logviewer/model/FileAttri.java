@@ -13,10 +13,6 @@ public class FileAttri extends TreeNode implements Comparable<FileAttri> {
         addAttribute("size", size);
     }
 
-    /* public void setLastUpdateDate(long lastUpdateDate) {
-        addAttribute("lastUpdateDate", DateHelper.formatLong(new java.util.Date(lastUpdateDate * 1000)));
-    }*/
-
     public String getPath() {
         return path;
     }

@@ -80,16 +80,21 @@ public class LoginServlet extends HttpServlet {
         return false;
     }
 
-    /* public static void main(String[] args) {
+    public static void main(String[] args) {
+        // 25ee4fd86378b86d31698cb4a81d85472b6e89c38c49264a84f7bd3939ea426a
         // System.out.println(DigestHelper.sha256Hex("look@2020&&loger"));
-    
-        Path classRunDir = Paths.get("D:\\repository\\ant\\ant\\1.6.5\\ant-1.6.5.jar");
+        System.out.println(DigestHelper.sha256Hex("321321&&loger")
+                .equals("25ee4fd86378b86d31698cb4a81d85472b6e89c38c49264a84f7bd3939ea426a"));
+        System.out.println(DigestHelper.sha256Hex("123456&&loger"));
+        System.out.println(DigestHelper.sha256Hex("123123&&loger"));
+
+        /* Path classRunDir = Paths.get("D:\\repository\\ant\\ant\\1.6.5\\ant-1.6.5.jar");
         if (classRunDir.toString().endsWith(".jar")) {
             classRunDir = classRunDir.getParent();
             if (classRunDir.endsWith("1.6.5")) {
                 System.out.println(classRunDir.getParent());// 打包以jar方式运行,在lib目录下
             }
         }
-        System.out.println("--" + classRunDir);
-    }*/
+        System.out.println("--" + classRunDir);*/
+    }
 }
