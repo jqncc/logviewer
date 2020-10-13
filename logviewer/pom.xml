@@ -14,7 +14,7 @@
 		<maven.javadoc.skip>true</maven.javadoc.skip>
 		<version.logback>1.2.3</version.logback>
 		<version.slf4j>1.7.21</version.slf4j>
-		<version.junit>4.11</version.junit>
+		<version.junit>4.13.1</version.junit>
 		<version.jdk>1.8</version.jdk>
 		<version.jflame>2.1.0-beta</version.jflame>
 		<version.tomcat>9.0.29</version.tomcat>
