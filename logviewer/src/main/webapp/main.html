@@ -22,7 +22,8 @@ $(function() {
 					 if(row.name!=null){
 						 sn=sn+"["+row.name+"]";
 					 }
-					t.append('<a class="slink" href="#" data-ip="'+row.ip+'" title="目录:'+row.logDir+'">'+sn+'</a>');
+					 var ipo=row.ip+"_"+row.port;
+					t.append('<a class="slink" href="#" data-ip="'+ipo+'" title="目录:'+row.logDir+'">'+sn+'</a>');
 				});
 			}
 		}else{

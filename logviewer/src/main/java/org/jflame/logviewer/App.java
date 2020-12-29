@@ -1,5 +1,6 @@
 package org.jflame.logviewer;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,6 +12,7 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.jflame.commons.util.StringHelper;
+import org.jflame.commons.util.file.FileHelper;
 
 /**
  * 启动程序https://github.com/jqncc/logviewer
@@ -63,10 +65,9 @@ public class App {
         // addServlets(context);
         // addFilters(context);
         // context.getServletContext().addListener(new MySessionListener());
-        Path tmpDir = classRunDir.resolve("temp");
-        if (!Files.exists(tmpDir)) {
-            Files.createDirectories(tmpDir);
-        }
+        Path tmpDir = Files.createTempDirectory("logviewer");
+        tmpDir.toFile().setWritable(true);
+
         SysParam.TMP_DIR = tmpDir.toString();
         Runtime.getRuntime().addShutdownHook(new Thread() {
 
@@ -77,6 +78,13 @@ public class App {
                     tomcat.destroy();
                 } catch (LifecycleException e) {
                     e.printStackTrace();
+                }
+                if (tmpDir != null) {
+                    try {
+                        FileHelper.deleteDirectory(tmpDir.toFile());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
                 System.out.println("stopped logviewer");
             }

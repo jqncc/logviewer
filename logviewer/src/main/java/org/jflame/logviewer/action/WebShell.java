@@ -53,6 +53,7 @@ public class WebShell {
             logger.error("websocket error,server not found {}", serverIp);
             return;
         }
+        serverIp = serverCfg.get().getIp();
         HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
         // 一个用户只保留一个连接
         for (WebShell w : webShellList) {
@@ -82,40 +83,66 @@ public class WebShell {
     @OnMessage
     public void onMessage(String message, Session session) throws IOException, InterruptedException {
         if (StringHelper.isNotEmpty(message)) {
-            if (message.indexOf("&") > 0 || message.indexOf("||") > 0) {
+            if (StringUtils.indexOfAny(message, '&', '|', '>', '<') > 0) {
                 logger.warn("拒绝执行命令:{}", message);
                 sendMessage("命令不能含& ||特殊字符");
                 return;
             }
             initSSHClient();
-            String cmd = StringUtils.substringBefore(message, " ");
-            if ("tail".equals(cmd) || "tailf".equals(cmd)) {
-                try {
-                    curSSHClient.execAsync(message, new AsyncCmdCallBack() {
+            message = message.trim();
+            try {
+                String cmd = StringUtils.substringBefore(message, " ");
+                if ("tail".equals(cmd) || "tailf".equals(cmd)) {
+                    String doFile = getFileFromCmd(message);
+                    if (!curServer.isCanRead(doFile)) {
+                        sendMessage("不可访问" + doFile);
+                        return;
+                    }
+                    try {
+                        curSSHClient.execAsync(message, new AsyncCmdCallBack() {
 
-                        @Override
-                        public void hanndle(String returnText) {
-                            sendMessage(returnText);
-                        }
-                    });
-                } catch (RemoteAccessException e) {
-                    sendMessage(cmd + "命令执行错误:" + e.getMessage());
+                            @Override
+                            public void hanndle(String returnText) {
+                                sendMessage(returnText);
+                            }
+                        });
+                    } catch (RemoteAccessException e) {
+                        sendMessage(cmd + "命令执行错误:" + e.getMessage());
+                    }
+                } else if ("cat".equals(cmd) || "head".equals(cmd)) {
+                    String doFile = getFileFromCmd(message);
+                    if (!curServer.isCanRead(doFile)) {
+                        sendMessage("不可访问" + doFile);
+                        return;
+                    }
+                    StringBuffer result = null;
+                    try {
+                        result = curSSHClient.exec(message);
+                    } catch (RemoteAccessException e) {
+                        sendMessage(cmd + "命令执行错误:" + e.getMessage());
+                    }
+                    if (result != null && result.length() > 0) {
+                        sendMessage(result.toString());
+                    }
+                } else if ("cat".equals(cmd)) {
+                    sendMessage("已连接");
+                } else {
+                    sendMessage("不支持的命令");
                 }
-            } else if ("cat".equals(cmd) || "head".equals(cmd)) {
-                StringBuffer result = null;
-                try {
-                    result = curSSHClient.exec(message);
-                } catch (RemoteAccessException e) {
-                    sendMessage(cmd + "命令执行错误:" + e.getMessage());
-                }
-                if (result != null && result.length() > 0) {
-                    sendMessage(result.toString());
-                }
-            } else {
-                sendMessage("不支持的命令");
+            } catch (Exception e) {
+                logger.error("shell命令处理异常,命令:{},ex:{}", message, e);
             }
         }
+    }
 
+    String getFileFromCmd(String cmd) {
+        String[] cmdOptions = cmd.split(" ");
+        for (int i = 1; i < cmdOptions.length; i++) {
+            if (cmdOptions[i].charAt(0) != '-') {
+                return cmdOptions[i];
+            }
+        }
+        return null;
     }
 
     @OnClose

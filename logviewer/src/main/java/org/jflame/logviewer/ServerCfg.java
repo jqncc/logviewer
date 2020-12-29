@@ -24,8 +24,15 @@ public final class ServerCfg {
         return serverCfgs.getServer();
     }
 
-    public static Optional<Server> getServer(String ip) {
-        return getServers().stream().filter(s -> s.getIp().equals(ip)).findFirst();
+    public static Optional<Server> getServer(String ipport) {
+        String[] ipstrArr = ipport.trim().split("_");
+        String ip = ipstrArr[0];
+        int port = Integer.parseInt(ipstrArr[1]);
+        return getServer(ip, port);
+    }
+
+    public static Optional<Server> getServer(String ip, int port) {
+        return getServers().stream().filter(s -> s.getIp().equals(ip) && s.getPort() == port).findFirst();
     }
 
     @SuppressWarnings("unchecked")

@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -16,6 +18,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.jflame.commons.codec.TranscodeHelper;
 import org.jflame.commons.exception.RemoteAccessException;
 import org.jflame.commons.model.CallResult;
@@ -39,6 +42,16 @@ import org.jflame.web.WebUtils;
 public class ShowServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+    ExecutorService executorService;
+
+    public ShowServlet() {
+        executorService = Executors.newFixedThreadPool(2, new BasicThreadFactory.Builder().daemon(true).build());
+    }
+
+    @Override
+    public void destroy() {
+        executorService.shutdown();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -75,7 +88,7 @@ public class ShowServlet extends HttpServlet {
     private void lsFiles(HttpServletRequest request, HttpServletResponse response, CallResult<Object> result)
             throws IOException {
         List<FileAttri> fileAttris = new ArrayList<>();
-        String ip = request.getParameter("ip").trim();
+        String ip = request.getParameter("ip");
         Optional<Server> selectedServer = ServerCfg.getServer(ip);
         if (!selectedServer.isPresent()) {
             result.paramError(ip + "服务器未配置");
@@ -145,9 +158,7 @@ public class ShowServlet extends HttpServlet {
             response.getWriter().print("请选择要下载的文件");
             return;
         }
-
-        String ip = request.getParameter("ip").trim();
-        Optional<Server> selectedServer = ServerCfg.getServer(ip);
+        Optional<Server> selectedServer = ServerCfg.getServer(request.getParameter("ip"));
         if (!selectedServer.isPresent()) {
             response.getWriter().print("服务器未配置");
             return;
@@ -159,23 +170,18 @@ public class ShowServlet extends HttpServlet {
             return;
         }
         Server connServer = selectedServer.get();
-        String[] dirs = connServer.dirs();
-        boolean baseDirOk = false;
-        for (String d : dirs) {
-            if (downFile.startsWith(d)) {
-                baseDirOk = true;
-                break;
-            }
-        }
+
+        boolean baseDirOk = connServer.isCanRead(downFile);
         if (!baseDirOk) {
             response.getWriter().print("文件路径不正确");
             return;
         }
         ServletOutputStream output = null;
         InputStream input = null;
+        String zipFile = null;
         try {
             String downFileDir = FileHelper.getDir(downFile);
-            Path downFileDirPath = Paths.get(SysParam.TMP_DIR, ip, downFileDir);
+            Path downFileDirPath = Paths.get(SysParam.TMP_DIR, connServer.getIp(), downFileDir);
             Files.createDirectories(downFileDirPath);
             String downFilename = FileHelper.getFilename(downFile);
 
@@ -186,9 +192,10 @@ public class ShowServlet extends HttpServlet {
                 String dstZipFilename = downFilename + ".zip";
 
                 client.download(downFile, dstFile);
-                ZipHelper.zip(dstFile, downFileDirPath.toString(), dstZipFilename, true, StandardCharsets.UTF_8);
+                zipFile = ZipHelper.zip(dstFile, downFileDirPath.toString(), dstZipFilename, false,
+                        StandardCharsets.UTF_8);
 
-                input = Files.newInputStream(downFileDirPath.resolve(dstZipFilename));
+                input = Files.newInputStream(Paths.get(zipFile));
                 WebUtils.setFileDownloadHeader(response, dstZipFilename, null);
                 output = response.getOutputStream();
                 IOHelper.copy(input, output, new byte[8096]);
@@ -205,8 +212,23 @@ public class ShowServlet extends HttpServlet {
             throw new ServletException(e);
         } finally {
             IOHelper.closeQuietly(input);
+            if (zipFile != null) {
+                executorService.execute(new DeleteFileThread(zipFile));
+            }
         }
-
     }
 
+    private class DeleteFileThread implements Runnable {
+
+        private String deleteFile;
+
+        public DeleteFileThread(String _deleteFile) {
+            deleteFile = _deleteFile;
+        }
+
+        @Override
+        public void run() {
+            FileHelper.deleteQuietly(deleteFile);
+        }
+    }
 }

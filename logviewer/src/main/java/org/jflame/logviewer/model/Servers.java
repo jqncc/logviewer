@@ -8,9 +8,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.jflame.commons.util.CollectionHelper;
-import org.jflame.commons.util.XmlBeanHelper;
-
 @XmlRootElement(name = "servers")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Servers implements Serializable {
@@ -28,19 +25,19 @@ public class Servers implements Serializable {
         this.server = server;
     }
 
-    public static void main(String[] args) {
+    /* public static void main(String[] args) {
         Servers cfg = new Servers();
-
+    
         Server s1 = new Server();
         s1.setIp("10.18.200.18");
         s1.setLogDir("/webserver/logs");
-
+    
         Server s2 = new Server();
         s2.setIp("10.18.200.58");
         s2.setLogDir("/webserver/logs");
-
+    
         cfg.setServer(CollectionHelper.newList(s1, s2));
         String xml = XmlBeanHelper.toXml(cfg);
         System.err.println(xml);
-    }
+    }*/
 }

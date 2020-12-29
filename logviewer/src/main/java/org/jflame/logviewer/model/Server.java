@@ -68,6 +68,25 @@ public class Server implements Serializable, Cloneable {
         return null;
     }
 
+    /**
+     * 判断给定文件是否可读,只有在配置目录里的文件才能访问
+     * 
+     * @param file
+     * @return
+     */
+    public boolean isCanRead(String file) {
+        if (StringHelper.isEmpty(file)) {
+            return false;
+        }
+        String[] dirs = dirs();
+        for (String d : dirs) {
+            if (file.startsWith(d)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String[] excludeLogs() {
         if (StringHelper.isNotEmpty(excludeLog)) {
             return StringUtils.deleteWhitespace(excludeLog).split(",");

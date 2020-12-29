@@ -169,7 +169,7 @@ function openWebSocket(){
      ws.onopen = function()
      {
     	 statusToggle(true);
-    	 ws.send("Heartbeat");
+    	 ws.send("hello");
      };
      ws.onclose = function(evt)
      {
