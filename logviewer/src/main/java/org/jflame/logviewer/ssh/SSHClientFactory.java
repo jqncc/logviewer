@@ -17,17 +17,18 @@ public class SSHClientFactory {
     public static SSHClient getSSHClient(String sessionId, Server s) throws RemoteAccessException {
         Map<String,SSHClient> sshMap = userSSHClientMap.get(sessionId);
         SSHClient client;
+        String key = s.getIPAndPort();
         if (sshMap == null) {
             client = new SSHClient(s);
             sshMap = new HashMap<>();
-            sshMap.put(s.getIp(), client);
+            sshMap.put(key, client);
             userSSHClientMap.put(sessionId, sshMap);
             return client;
         } else {
-            client = sshMap.get(s.getIp());
+            client = sshMap.get(key);
             if (client == null) {
                 client = new SSHClient(s);
-                sshMap.put(s.getIp(), client);
+                sshMap.put(key, client);
             }
         }
         return client;
@@ -36,17 +37,18 @@ public class SSHClientFactory {
     public static SFTPClient getFtpClient(String sessionId, Server s) throws RemoteAccessException {
         Map<String,SFTPClient> sshMap = userFtpClientMap.get(sessionId);
         SFTPClient client;
+        String key = s.getIPAndPort();
         if (sshMap == null) {
             client = new SFTPClient(s);
             sshMap = new HashMap<>();
-            sshMap.put(s.getIp(), client);
+            sshMap.put(key, client);
             userFtpClientMap.put(sessionId, sshMap);
             return client;
         } else {
-            client = sshMap.get(s.getIp());
+            client = sshMap.get(key);
             if (client == null) {
                 client = new SFTPClient(s);
-                sshMap.put(s.getIp(), client);
+                sshMap.put(key, client);
             }
         }
         return client;

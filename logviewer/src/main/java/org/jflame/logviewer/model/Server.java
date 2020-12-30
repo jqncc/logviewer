@@ -1,5 +1,6 @@
 package org.jflame.logviewer.model;
 
+import java.beans.Transient;
 import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -133,6 +134,15 @@ public class Server implements Serializable, Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
+    }
+
+    public boolean isEqualServer(Server s) {
+        return ip != null && ip.equals(s.getIp()) && port == s.getPort();
+    }
+
+    @Transient
+    public String getIPAndPort() {
+        return ip + "_" + port;
     }
 
     @Override

@@ -53,11 +53,10 @@ public class WebShell {
             logger.error("websocket error,server not found {}", serverIp);
             return;
         }
-        serverIp = serverCfg.get().getIp();
         HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
         // 一个用户只保留一个连接
         for (WebShell w : webShellList) {
-            if (w.getCurHttpSessionId().equals(httpSession.getId()) && w.getCurServer().getIp().equals(serverIp)) {
+            if (w.getCurHttpSessionId().equals(httpSession.getId()) && curServer.isEqualServer(w.getCurServer())) {
                 w.close(new CloseReason(CloseCodes.CANNOT_ACCEPT, "重复的ws连接,关闭前一个"));
             }
         }
