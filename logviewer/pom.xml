@@ -17,7 +17,7 @@
 		<version.junit>4.11</version.junit>
 		<version.jdk>1.8</version.jdk>
 		<version.jflame>2.1.0-beta</version.jflame>
-		<version.tomcat>9.0.29</version.tomcat>
+		<version.tomcat>10.0.4</version.tomcat>
 		<assemble.dir>${project.build.directory}</assemble.dir>
 	</properties>
 	<dependencies>
