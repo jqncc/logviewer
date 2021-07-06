@@ -8,6 +8,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.jflame.commons.codec.TranscodeHelper;
+
 @XmlRootElement(name = "servers")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Servers implements Serializable {
@@ -25,19 +27,23 @@ public class Servers implements Serializable {
         this.server = server;
     }
 
-    /* public static void main(String[] args) {
-        Servers cfg = new Servers();
-    
+    public static void main(String[] args) {
+        /*Servers cfg = new Servers();
+        
         Server s1 = new Server();
         s1.setIp("10.18.200.18");
         s1.setLogDir("/webserver/logs");
-    
+        
         Server s2 = new Server();
         s2.setIp("10.18.200.58");
         s2.setLogDir("/webserver/logs");
-    
+        
         cfg.setServer(CollectionHelper.newList(s1, s2));
         String xml = XmlBeanHelper.toXml(cfg);
-        System.err.println(xml);
-    }*/
+        System.err.println(xml);*/
+
+        // String a = "61,62,63,31,32,4e2d";
+        String a = "61";
+        System.out.println(TranscodeHelper.dencodeHex(a));
+    }
 }

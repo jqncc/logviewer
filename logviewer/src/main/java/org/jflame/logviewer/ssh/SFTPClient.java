@@ -26,15 +26,23 @@ import com.jcraft.jsch.SftpException;
 
 public class SFTPClient extends BaseJchClient {
 
+    private ChannelSftp channel;
+
     public SFTPClient(Server serverInfo) throws RemoteAccessException {
         super(serverInfo);
     }
 
     private ChannelSftp openChannel() throws RemoteAccessException {
-        conn();
         try {
-            ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
-            channel.connect(DEFAULT_CONN_TIMEOUT);
+            if (channel != null && channel.isClosed()) {
+                channel.disconnect();
+                channel = null;
+            }
+            if (channel == null || !channel.isConnected()) {
+                conn();
+                channel = (ChannelSftp) session.openChannel("sftp");
+                channel.connect(DEFAULT_CONN_TIMEOUT);
+            }
             return channel;
         } catch (JSchException e) {
             throw new RemoteAccessException(e);
@@ -117,60 +125,16 @@ public class SFTPClient extends BaseJchClient {
      * 列出指定目录下文件列表
      * 
      * @param remotePath
+     * @param descendant 是否递归查询子孙目录
+     * @param excludes 要排除的文件
      * @return
      */
-    @SuppressWarnings("unchecked")
-    public List<FileAttri> ls(String remotePath, String... excludes) throws RemoteAccessException {
+    public List<FileAttri> ls(String remotePath, boolean descendant, String... excludes) throws RemoteAccessException {
         ChannelSftp sftp = null;
-        List<FileAttri> lsFiles = new ArrayList<>();
-        FileAttri tmpFileAttri;
-        long tmpSize;
-        String tmpFullPath;
+        List<FileAttri> lsFiles;
         try {
             sftp = openChannel();
-            Vector<LsEntry> vector = sftp.ls(remotePath);
-
-            for (LsEntry entry : vector) {
-                if (".".equals(entry.getFilename()) || "..".equals(entry.getFilename())) {
-                    continue;
-                }
-                tmpFullPath = UrlHelper.mergeUrl(remotePath, entry.getFilename());
-                if (excludes != null && ArrayUtils.contains(excludes, tmpFullPath)) {
-                    logger.debug("忽略目录:{}", tmpFullPath);
-                    continue;
-                }
-                tmpFileAttri = new FileAttri();
-                tmpFileAttri.setLabel(entry.getFilename());
-                tmpFileAttri.setLastUpdateDate(entry.getAttrs().getATime());
-                tmpFileAttri.setPath(tmpFullPath);
-                tmpFileAttri.setId(Math.abs(tmpFileAttri.getPath().hashCode()));
-                tmpFileAttri.addAttribute("dir", false);
-                // System.out.println(entry.getFilename() + " p:" + entry.getAttrs().getPermissions());
-
-                if (entry.getAttrs().isDir()) {
-                    tmpFileAttri.setState(TreeNode.STATE_CLOSED);
-                    tmpFileAttri.addAttribute("dir", true);
-                    try {
-                        List<FileAttri> childs = ls(tmpFileAttri.getPath(), excludes);
-                        if (CollectionHelper.isNotEmpty(childs)) {
-                            tmpFileAttri.addNodes(childs);
-                        }
-                    } catch (PermissionException e) {
-                        tmpFileAttri.setLabel(tmpFileAttri.getLabel() + "[无权限]");
-                    }
-                } else {
-                    tmpFileAttri.setState(TreeNode.STATE_OPEN);
-                    tmpSize = entry.getAttrs().getSize();
-                    if (tmpSize < 1024) {
-                        tmpFileAttri.setSize(entry.getAttrs().getSize() + "B");
-                    } else if (tmpSize >= 1024 && tmpSize < 1048576) {
-                        tmpFileAttri.setSize(MathHelper.round((entry.getAttrs().getSize() / 1024f), 1) + "KB");
-                    } else if (tmpSize > 1048576) {
-                        tmpFileAttri.setSize(MathHelper.round((entry.getAttrs().getSize() / 1048576f), 2) + "MB");
-                    }
-                }
-                lsFiles.add(tmpFileAttri);
-            }
+            lsFiles = ls(sftp, remotePath, descendant, excludes);
         } catch (SftpException e) {
             logger.error("ls remotePath:{} , error:{}", remotePath, e.getMessage());
             if ("Permission denied".equals(e.getMessage())) {
@@ -182,8 +146,75 @@ public class SFTPClient extends BaseJchClient {
                 sftp.disconnect();
             }
         }
-        Collections.sort(lsFiles);
+        if (lsFiles != null) {
+            Collections.sort(lsFiles);
+        }
         return lsFiles;
     }
 
+    @SuppressWarnings("unchecked")
+    private List<FileAttri> ls(ChannelSftp sftp, String remotePath, boolean descendant, String... excludes)
+            throws SftpException {
+        List<FileAttri> lsFiles = new ArrayList<>();
+        FileAttri tmpFileAttri;
+        long tmpSize;
+        String tmpFullPath;
+        Vector<LsEntry> vector = sftp.ls(remotePath);
+        for (LsEntry entry : vector) {
+            if (".".equals(entry.getFilename()) || "..".equals(entry.getFilename())) {
+                continue;
+            }
+            tmpFullPath = UrlHelper.mergeUrl(remotePath, entry.getFilename());
+            if (excludes != null && ArrayUtils.contains(excludes, tmpFullPath)) {
+                logger.debug("忽略目录:{}", tmpFullPath);
+                continue;
+            }
+            tmpFileAttri = new FileAttri();
+            tmpFileAttri.setLabel(entry.getFilename());
+            tmpFileAttri.setLastUpdateDate(entry.getAttrs().getATime());
+            tmpFileAttri.setPath(tmpFullPath);
+            tmpFileAttri.setId(Math.abs(tmpFileAttri.getPath().hashCode()));
+            tmpFileAttri.addAttribute("dir", false);
+            // System.out.println(entry.getFilename() + " p:" + entry.getAttrs().getPermissions());
+
+            if (entry.getAttrs().isDir()) {
+                tmpFileAttri.setState(TreeNode.STATE_CLOSED);
+                tmpFileAttri.addAttribute("dir", true);
+                if (descendant) {
+                    try {
+                        List<FileAttri> childs = ls(sftp, tmpFileAttri.getPath(), descendant, excludes);
+                        if (CollectionHelper.isNotEmpty(childs)) {
+                            tmpFileAttri.addNodes(childs);
+                        }
+                    } catch (PermissionException e) {
+                        tmpFileAttri.setLabel(tmpFileAttri.getLabel() + "[无权限]");
+                    }
+                }
+            } else {
+                tmpFileAttri.setState(TreeNode.STATE_OPEN);
+                tmpSize = entry.getAttrs().getSize();
+                if (tmpSize < 1024) {
+                    tmpFileAttri.setSize(entry.getAttrs().getSize() + "B");
+                } else if (tmpSize >= 1024 && tmpSize < 1048576) {
+                    tmpFileAttri.setSize(MathHelper.round((entry.getAttrs().getSize() / 1024f), 1) + "KB");
+                } else if (tmpSize > 1048576) {
+                    tmpFileAttri.setSize(MathHelper.round((entry.getAttrs().getSize() / 1048576f), 2) + "MB");
+                }
+            }
+            lsFiles.add(tmpFileAttri);
+        }
+        return lsFiles;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (channel != null) {
+            try {
+                channel.disconnect();
+            } catch (Exception e) {
+                channel = null;
+            }
+        }
+        super.close();
+    }
 }

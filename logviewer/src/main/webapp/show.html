@@ -7,6 +7,7 @@
 <link rel="stylesheet" type="text/css" href="js/plugins/easyui/themes/icon.css">
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/plugins/easyui/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
 <style type="text/css">
 p{line-height:200%}
 label{display: inline-block;width:80px}
@@ -35,7 +36,6 @@ label{display: inline-block;width:80px}
 </div>
 <div id="content" on>
 	<div id="nav">
-		<div id="loader"><img alt="加载中..." src="js/plugins/easyui/themes/material/images/loading.gif" align="middle">远程目录加载中...</div>
 		<table id="browser" style="width:100%;"></table>
 	</div>
 	<div id="console">
@@ -57,7 +57,7 @@ label{display: inline-block;width:80px}
 var ip;
 var showUrl=ctxUrl("/show.do");
 var initLoaded=false;
-
+var bd="";
 $(function(){
 	ip=getQueryParam("ip");
 	$('#browser').treegrid({
@@ -65,8 +65,20 @@ $(function(){
 	      treeField:'label',
 	      border:false,
 	      lines:true,
-	      onBeforeLoad:function(row, param){if(!initLoaded)$('#loader').show();},
-	      onLoadSuccess:function(row, data){$('#loader').hide();initLoaded=true},
+	      method:'post',
+	      url:showUrl,
+	      queryParams: {
+	    	  "obj":'file',"ip":ip
+	  	  },
+	  	 loadFilter: function(result){
+	  		if(result.status==4001){
+				$('#loginWin').dialog('open');
+			}else if(result.status==200){
+				return result.data;
+			}else{
+				alert(result.message);
+			}
+		 },
 	      columns:[[
 	          {title:'文件名',field:'label',width:'50%'},
 	          {title:'最近修改日期',field:'updateDateText',width:'25%'},
@@ -93,13 +105,19 @@ $(function(){
 		buttons:[{
 			text:'确定',
 			handler:function(){
-				showFiles();
+				var n=$('#shelluser').val();var p=$('#shellpwd').val();
+				if(isEmpty(n)||isEmpty(p)){
+					return false;
+				}
+				var up=encode(n+"__"+p);
+				$('#browser').treegrid("reload",{"obj":'file',"ip":ip,"su":up});
 				$('#loginWin').dialog('close');
+				up=null;
 			}
 		}]
 	});
 	
-	showFiles();
+	//showFiles();
 	
 	$('#cmdInput').bind('keydown', function (event) {
         var event = window.event || arguments.callee.caller.arguments[0];

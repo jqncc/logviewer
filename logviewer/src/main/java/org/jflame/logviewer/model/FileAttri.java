@@ -33,6 +33,10 @@ public class FileAttri extends TreeNode implements Comparable<FileAttri> {
         this.lastUpdateDate = lastUpdateDate;
     }
 
+    public Boolean isDir() {
+        return Boolean.TRUE.equals(getAttribute("dir"));
+    }
+
     @Override
     public int compareTo(FileAttri o) {
         if (this.getLastUpdateDate() > o.getLastUpdateDate())

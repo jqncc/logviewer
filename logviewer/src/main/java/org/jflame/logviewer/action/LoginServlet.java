@@ -10,9 +10,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.jflame.commons.codec.TranscodeHelper;
 import org.jflame.commons.crypto.DigestHelper;
 import org.jflame.commons.model.CallResult;
 import org.jflame.commons.model.CallResult.ResultEnum;
+import org.jflame.commons.util.CharsetHelper;
 import org.jflame.commons.util.StringHelper;
 import org.jflame.logviewer.SysParam;
 import org.jflame.web.WebUtils;
@@ -36,7 +38,7 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String uname = request.getParameter("uname");
-        String upwd = request.getParameter("upwd");
+        // String upwd = request.getParameter("upwd");
         String validCode = request.getParameter("vcode");
         CallResult<String> result = new CallResult<>(ResultEnum.PARAM_ERROR);
         if (StringHelper.isEmpty(validCode)) {
@@ -47,10 +49,11 @@ public class LoginServlet extends HttpServlet {
             WebUtils.outJson(response, result.message("请输入用户名"));
             return;
         }
-        if (StringHelper.isEmpty(upwd)) {
-            WebUtils.outJson(response, result.message("请输入密码"));
-            return;
-        }
+        String namePwdBase64 = CharsetHelper.getUtf8String(TranscodeHelper.dencodeBase64(uname));
+        String[] tmpNps = namePwdBase64.split("__");
+        uname = tmpNps[0];
+        String upwd = tmpNps[1];
+
         HttpSession session = request.getSession();
         String curValidCode = (String) session.getAttribute("validcode");
         if (!validCode.equalsIgnoreCase(curValidCode)) {
@@ -80,21 +83,21 @@ public class LoginServlet extends HttpServlet {
         return false;
     }
 
-    public static void main(String[] args) {
-        // 25ee4fd86378b86d31698cb4a81d85472b6e89c38c49264a84f7bd3939ea426a
-        // System.out.println(DigestHelper.sha256Hex("look@2020&&loger"));
-        System.out.println(DigestHelper.sha256Hex("321321&&loger")
-                .equals("25ee4fd86378b86d31698cb4a81d85472b6e89c38c49264a84f7bd3939ea426a"));
-        System.out.println(DigestHelper.sha256Hex("123456&&loger"));
-        System.out.println(DigestHelper.sha256Hex("123123&&loger"));
+    // public static void main(String[] args) {
+    // 25ee4fd86378b86d31698cb4a81d85472b6e89c38c49264a84f7bd3939ea426a
+    // System.out.println(DigestHelper.sha256Hex("look@2020&&loger"));
+    // System.out.println(DigestHelper.sha256Hex("321321&&loger")
+    // .equals("25ee4fd86378b86d31698cb4a81d85472b6e89c38c49264a84f7bd3939ea426a"));
+    // System.out.println(DigestHelper.sha256Hex("123456&&loger"));
+    // System.out.println(DigestHelper.sha256Hex("123123&&loger"));
 
-        /* Path classRunDir = Paths.get("D:\\repository\\ant\\ant\\1.6.5\\ant-1.6.5.jar");
-        if (classRunDir.toString().endsWith(".jar")) {
-            classRunDir = classRunDir.getParent();
-            if (classRunDir.endsWith("1.6.5")) {
-                System.out.println(classRunDir.getParent());// 打包以jar方式运行,在lib目录下
-            }
+    /* Path classRunDir = Paths.get("D:\\repository\\ant\\ant\\1.6.5\\ant-1.6.5.jar");
+    if (classRunDir.toString().endsWith(".jar")) {
+        classRunDir = classRunDir.getParent();
+        if (classRunDir.endsWith("1.6.5")) {
+            System.out.println(classRunDir.getParent());// 打包以jar方式运行,在lib目录下
         }
-        System.out.println("--" + classRunDir);*/
     }
+    System.out.println("--" + classRunDir);*/
+    // }
 }

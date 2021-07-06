@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>登录-日志查看</title>
 <script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
 <style type="text/css">
 #loginDiv{margin-top:100px;margin-left:200px;width:400px}
 p{line-height:200%}
@@ -27,22 +28,23 @@ function login(){
 	var n=$('#uname').val();
 	var p=$('#upwd').val();
 	var v=$('#validcode').val();
-	if(n==""){
+	if(isEmpty(n)){
 		alert("请输入用户名");
 		return;
 	}
-	if(p==""){
+	if(isEmpty(p)){
 		alert("请输入密码");
 		return;
 	}
-	if(v==""){
+	if(isEmpty(v)){
 		alert("请输入验证码");
 		return;
 	}
+	var up=encode(n+"__"+p);
 	$.ajax({
 		url:ctxUrl('/login'),
 		method:'POST',
-		data:{uname:n,upwd:p,vcode:v},
+		data:{uname:up,vcode:v},
 		dataType:"json",
 		success:function(result){
 			if(result&&result.status==200){
