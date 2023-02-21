@@ -1,3 +1,5 @@
+## 项目以转到gitee : https://gitee.com/jqncc/logviewer
+
 # logviewer
 
 一个简单的服务器日志查看系统,实现日志文件的在线浏览和下载,无需安装代理在线查看实时日志(类似tail命令效果). 不想搭建复杂的ELK可以试用下
